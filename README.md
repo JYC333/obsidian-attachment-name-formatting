@@ -18,6 +18,7 @@ The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending n
 
 ### Roadmap
 - When deleting attachment in a file, rename it with "filename attachmentFormat unuse 1.xxx".
+- Support two exactly same attachment in one note.
 - When deleting an attachment that no other file using this attachment, delete it from vault. (Could be disable)
 - Support all types of attachment that supported by Obsidian.
 - Setting for connection character between filename, attachmentFormat and indexNumber.
