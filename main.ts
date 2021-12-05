@@ -43,30 +43,31 @@ export default class AttachmentNameFormatting extends Plugin {
 			return;
 		}
 
-		// Get all files in the vault, perpare for finding the attachment
-		var files = this.app.vault.getFiles();
 		// Get the metadata of the active file
-		var cache = this.app.metadataCache.getFileCache(file)
+		var cache = this.app.metadataCache.getFileCache(file);
 		// Check whether the file has attachments
 		if (cache.hasOwnProperty("embeds")) {
 			let num = 1;
 			// Filter the specific attachment extension
 			for (let item of cache.embeds.filter(d => d.link.match(this.settings.imageExtenstions))) {
 				// Find the attachment file
-				let attachmentFile = files.filter(d => d.name === item.link);
-				// Create the new full name with path
-				let path = attachmentFile[0].path.replace(item.link, "");
-				let newName = [file.basename, this.settings.imageFormat, num].join(" ") + "." + attachmentFile[0].extension;
-				let fullName = path + newName;
-				// Check wether destination is existed
-				let destinationFile = this.checkDestinationExistence(attachmentFile[0].path, fullName);
-				// When change order, set the exist destination to a tmp name
-				if (destinationFile) {
-					this.app.fileManager.renameFile(attachmentFile[0], path + "tmp_" + newName);
-				} else {
-					this.app.fileManager.renameFile(attachmentFile[0], fullName);
+				let attachmentFile = this.app.vault.getAbstractFileByPath(item.link);
+				// Check if it exists and is of the correct type
+				if (attachmentFile instanceof TFile) {
+					// Create the new full name with path
+					let path = attachmentFile.path.replace(item.link, "");
+					let newName = [file.basename, this.settings.imageFormat, num].join(" ") + "." + attachmentFile.extension;
+					let fullName = path + newName;
+					// Check wether destination is existed
+					let destinationFile = this.checkDestinationExistence(attachmentFile.path, fullName);
+					// When change order, set the exist destination to a tmp name
+					if (destinationFile) {
+						this.app.fileManager.renameFile(attachmentFile, path + "tmp_" + newName);
+					} else {
+						this.app.fileManager.renameFile(attachmentFile, fullName);
+					}
+					num++;
 				}
-				num++;
 			}
 		}
 	};
