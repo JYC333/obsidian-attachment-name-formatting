@@ -1,68 +1,28 @@
-## Obsidian Sample Plugin
+## Obsidian Attachment Name Formatting
+This plugin will format all attachments in the format: "filename attachmentFormat indexNumber.xxx"
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending number from 1 based on the attchmentFormat.
 
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
+### Features
+- Format attachments in active file, such as "filename image 1.png"
+- Add new attachment -> will rename the attachment based on type and index
+- Change order -> will rename attachments with new order
+- Delete attachment -> will rename attachments with new order
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+### Known Issues
+- **Do not support two exactly same attachment in one note, it will crush!**
+- When delete an attachment which is already renamed, it will not rename and will occupy the indexNmuber for this note.
+- When there are two attachments have same name but in different paths, the function will not work correctly. Try to not change the setting "Files & Links -> Default location for new attachments".
+- Only support image attachment.
+- One attachment file in different notes, it will be renamed when the note is modified.
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Changes the default font color to red using `styles.css`.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+### Roadmap
+- When deleting attachment in a file, rename it with "filename attachmentFormat unuse 1.xxx".
+- When deleting an attachment that no other file using this attachment, delete it from vault. (Could be disable)
+- Support all types of attachment that supported by Obsidian.
+- Setting for connection character between filename, attachmentFormat and indexNumber.
+- Support the situation that attachments have same name but under different path.
+- When change the setting "Files & Links -> Default location for new attachments", sync all attachments' location with this setting. (Could be disable)
 
-### First time developing plugins?
-
-Quick starting guide for new plugin devs:
-
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
-
-### Releasing new releases
-
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
-
-### Adding your plugin to the community plugin list
-
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
-
-### How to use
-
-- Clone this repo.
-- `npm i` or `yarn` to install dependencies
-- `npm run dev` to start compilation in watch mode.
-
-### Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-### Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
-
-
-### API Documentation
-
-See https://github.com/obsidianmd/obsidian-api
+### LICENSE
+MIT

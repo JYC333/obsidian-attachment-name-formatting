@@ -1,85 +1,26 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
 
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
-	mySetting: string;
+interface AttachmentNameFormattingSettings {
+	imageFormat: string;
+	imageExtenstions: RegExp;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+const DEFAULT_SETTINGS: AttachmentNameFormattingSettings = {
+	imageFormat: "image",
+	imageExtenstions: /(.png|.jpg|.jpeg|.git|.bmp|.svg)$/,
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class AttachmentNameFormatting extends Plugin {
+	settings: AttachmentNameFormattingSettings;
 
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass('my-plugin-ribbon-class');
+		this.addSettingTab(new AttachmentNameFormattingSettingTab(this.app, this));
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
-
-		// This adds a simple command that can be triggered anywhere
-		this.addCommand({
-			id: 'open-sample-modal-simple',
-			name: 'Open sample modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
-			}
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'sample-editor-command',
-			name: 'Sample editor command',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-sample-modal-complex',
-			name: 'Open sample modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
-				}
-			}
-		});
-
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-	}
-
-	onunload() {
-
+		this.registerEvent(
+			this.app.metadataCache.on('changed', (file) => this.handleAttachmentNameFormatting(file)),
+		);
 	}
 
 	async loadSettings() {
@@ -89,48 +30,96 @@ export default class MyPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
+
+	/**
+	* Rename the attachments in the file when it has
+	* 
+	* @param	{TFile}	file	The file
+	*/
+	handleAttachmentNameFormatting(file: TFile) {
+		// If currently opened file is not the same as the one that trigger the event,
+		// skip this is to make sure other events don't trigger this plugin
+		if (this.app.workspace.getActiveFile() !== file) {
+			return;
+		}
+
+		// Get all files in the vault, perpare for finding the attachment
+		var files = this.app.vault.getFiles();
+		// Get the metadata of the active file
+		var cache = this.app.metadataCache.getFileCache(file)
+		// Check whether the file has attachments
+		if (cache.hasOwnProperty("embeds")) {
+			let num = 1;
+			// Filter the specific attachment extension
+			for (let item of cache.embeds.filter(d => d.link.match(this.settings.imageExtenstions))) {
+				// Find the attachment file
+				let attachmentFile = files.filter(d => d.name === item.link);
+				// Create the new full name with path
+				let path = attachmentFile[0].path.replace(item.link, "");
+				let newName = [file.basename, this.settings.imageFormat, num].join(" ") + "." + attachmentFile[0].extension;
+				let fullName = path + newName;
+				// Check wether destination is existed
+				let destinationFile = this.checkDestinationExistence(attachmentFile[0].path, fullName);
+				// When change order, set the exist destination to a tmp name
+				if (destinationFile) {
+					this.app.fileManager.renameFile(attachmentFile[0], path + "tmp_" + newName);
+				} else {
+					this.app.fileManager.renameFile(attachmentFile[0], fullName);
+				}
+				num++;
+			}
+		}
+	};
+
+	/**
+	* Check the existence of the destination file
+	* If exist, return the file, otherwise return null
+	* Ignore the file when the origin file is same as the destination file
+	* 
+	* @param	{String}		Origin		The file will be renamed
+	* @param	{String}		Destination	The destination of the file
+	* @returns	{TFile | null}	Return the existing destination file or null
+	*/
+	checkDestinationExistence(Origin: String, Destination: String): TFile | null {
+		var files = this.app.vault.getFiles();
+		// Exclude itself
+		files = files.filter(d => d.path === Destination && d.path !== Origin);
+		if (files.length > 0)
+			return files[0]
+		else
+			return null
+	};
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
+class AttachmentNameFormattingSettingTab extends PluginSettingTab {
+	plugin: AttachmentNameFormatting;
 
-	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
-}
-
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: AttachmentNameFormatting) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'Settings for my awesome plugin.'});
+		containerEl.createEl('h2', { text: 'Attachment Name Formatting' });
+		containerEl.createEl('p', { text: 'This plugin will format all attachments in the format: "filename attachmentType indexNumber.xxx".' });
+		containerEl.createEl('p', { text: 'Each type of attachment will have individual index.' });
+		containerEl.createEl('p', { text: 'Only recognize the file type that can be recognized by Obsidian.' });
+		containerEl.createEl('p', { text: '(Only support image right now)' });
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
+			.setName('Format for image')
+			.setDesc(
+				'Set the format for image attachment.',
+			)
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setPlaceholder('image')
+				.setValue(this.plugin.settings.imageFormat === "image" ? "" : this.plugin.settings.imageFormat)
 				.onChange(async (value) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.imageFormat = value;
 					await this.plugin.saveSettings();
 				}));
 	}
