@@ -1,13 +1,13 @@
-import { App, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, TFile, parseLinktext } from 'obsidian';
 
 interface AttachmentNameFormattingSettings {
 	imageFormat: string;
-	imageExtenstions: RegExp;
+	imageExtenstions: string;
 }
 
 const DEFAULT_SETTINGS: AttachmentNameFormattingSettings = {
 	imageFormat: "image",
-	imageExtenstions: /(.png|.jpg|.jpeg|.git|.bmp|.svg)$/,
+	imageExtenstions: "/(.png|.jpg|.jpeg|.gif|.bmp|.svg)$/",
 }
 
 export default class AttachmentNameFormatting extends Plugin {
@@ -32,11 +32,11 @@ export default class AttachmentNameFormatting extends Plugin {
 	}
 
 	/**
-	* Rename the attachments in the file when it has
+	* Rename the attachments in the active file when it has
 	* 
-	* @param	{TFile}	file	The file
+	* @param	{TFile}	file	The active file
 	*/
-	handleAttachmentNameFormatting(file: TFile) {
+	async handleAttachmentNameFormatting(file: TFile) {
 		// If currently opened file is not the same as the one that trigger the event,
 		// skip this is to make sure other events don't trigger this plugin
 		if (this.app.workspace.getActiveFile() !== file) {
@@ -44,51 +44,38 @@ export default class AttachmentNameFormatting extends Plugin {
 		}
 
 		// Get the metadata of the active file
-		var cache = this.app.metadataCache.getFileCache(file);
+		const attachments = this.app.metadataCache.getFileCache(file);
 		// Check whether the file has attachments
-		if (cache.hasOwnProperty("embeds")) {
+		if (attachments.hasOwnProperty("embeds")) {
 			let num = 1;
 			// Filter the specific attachment extension
-			for (let item of cache.embeds.filter(d => d.link.match(this.settings.imageExtenstions))) {
+			for (let item of attachments.embeds.filter(d => d.link.match(new RegExp(this.settings.imageExtenstions)))) {
 				// Find the attachment file
-				let attachmentFile = this.app.vault.getAbstractFileByPath(item.link);
+				let file_path = parseLinktext(item.link).path;
+				let attachmentFile = this.app.vault.getAbstractFileByPath(file_path);
+				// let attachmentFile = this.app.vault.getAbstractFileByPath(parseLinktext(item.link).path);
+				if (!attachmentFile) {
+					attachmentFile = this.app.metadataCache.getFirstLinkpathDest(file_path, file_path);
+				}
 				// Check if it exists and is of the correct type
 				if (attachmentFile instanceof TFile) {
 					// Create the new full name with path
-					let path = attachmentFile.path.replace(item.link, "");
+					let parent_path = attachmentFile.path.substring(0, attachmentFile.path.length - attachmentFile.name.length);
+					// let path = attachmentFile.path.replace(item.link, "");
 					let newName = [file.basename, this.settings.imageFormat, num].join(" ") + "." + attachmentFile.extension;
-					let fullName = path + newName;
+					let fullName = parent_path + newName;
 					// Check wether destination is existed
-					let destinationFile = this.checkDestinationExistence(attachmentFile.path, fullName);
-					// When change order, set the exist destination to a tmp name
-					if (destinationFile) {
-						this.app.fileManager.renameFile(attachmentFile, path + "tmp_" + newName);
+					let destinationFile = this.app.vault.getAbstractFileByPath(fullName);
+					if (destinationFile && destinationFile !== attachmentFile) {
+						await this.app.fileManager.renameFile(attachmentFile, parent_path + "tmp_" + newName);
 					} else {
-						this.app.fileManager.renameFile(attachmentFile, fullName);
+						await this.app.fileManager.renameFile(attachmentFile, fullName);
 					}
+					// console.log(uniqueList)
 					num++;
 				}
 			}
 		}
-	};
-
-	/**
-	* Check the existence of the destination file
-	* If exist, return the file, otherwise return null
-	* Ignore the file when the origin file is same as the destination file
-	* 
-	* @param	{String}		Origin		The file will be renamed
-	* @param	{String}		Destination	The destination of the file
-	* @returns	{TFile | null}	Return the existing destination file or null
-	*/
-	checkDestinationExistence(Origin: String, Destination: String): TFile | null {
-		var files = this.app.vault.getFiles();
-		// Exclude itself
-		files = files.filter(d => d.path === Destination && d.path !== Origin);
-		if (files.length > 0)
-			return files[0]
-		else
-			return null
 	};
 }
 
