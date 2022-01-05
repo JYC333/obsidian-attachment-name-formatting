@@ -2,13 +2,15 @@ import { App, Plugin, PluginSettingTab, Setting, TFile, parseLinktext } from 'ob
 
 interface AttachmentNameFormattingSettings {
 	imageFormat: string;
-	imageExtenstions: string;
 }
 
 const DEFAULT_SETTINGS: AttachmentNameFormattingSettings = {
 	imageFormat: "image",
-	imageExtenstions: "/(.png|.jpg|.jpeg|.gif|.bmp|.svg)$/",
 }
+
+const extensions = {
+	image: ["png", "jpg", "jpeg", "gif", "bmp", "svg"],
+};
 
 export default class AttachmentNameFormatting extends Plugin {
 	settings: AttachmentNameFormattingSettings;
@@ -49,7 +51,7 @@ export default class AttachmentNameFormatting extends Plugin {
 		if (attachments.hasOwnProperty("embeds")) {
 			let num = 1;
 			// Filter the specific attachment extension
-			for (let item of attachments.embeds.filter(d => d.link.match(new RegExp(this.settings.imageExtenstions)))) {
+			for (let item of attachments.embeds.filter(d => extensions.image.contains(d.link.split(".").pop()))) {
 				// Find the attachment file
 				let file_path = parseLinktext(item.link).path;
 				let attachmentFile = this.app.vault.getAbstractFileByPath(file_path);
