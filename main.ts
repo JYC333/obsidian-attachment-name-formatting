@@ -1,15 +1,28 @@
-import { App, Plugin, PluginSettingTab, Setting, TFile, parseLinktext } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, TFile, TAbstractFile, parseLinktext } from 'obsidian';
 
 interface AttachmentNameFormattingSettings {
-	imageFormat: string;
+	image: string;
+	audio: string;
+	video: string;
+	pdf: string;
+}
+
+interface AttachmentList {
+	[key: string]: Array<TAbstractFile>
 }
 
 const DEFAULT_SETTINGS: AttachmentNameFormattingSettings = {
-	imageFormat: "image",
+	image: "image",
+	audio: "audio",
+	video: "video",
+	pdf: "pdf",
 }
 
 const extensions = {
 	image: ["png", "jpg", "jpeg", "gif", "bmp", "svg"],
+	audio: ["mp3", "wav", "m4a", "ogg", "3gp", "flac"], // "webm"
+	video: ["map", "ogv"], // "webm"
+	pdf: ["pdf"],
 };
 
 export default class AttachmentNameFormatting extends Plugin {
@@ -49,32 +62,47 @@ export default class AttachmentNameFormatting extends Plugin {
 		const attachments = this.app.metadataCache.getFileCache(file);
 		// Check whether the file has attachments
 		if (attachments.hasOwnProperty("embeds")) {
-			let num = 1;
-			// Filter the specific attachment extension
-			for (let item of attachments.embeds.filter(d => extensions.image.contains(d.link.split(".").pop()))) {
-				// Find the attachment file
-				let file_path = parseLinktext(item.link).path;
-				let attachmentFile = this.app.vault.getAbstractFileByPath(file_path);
-				// let attachmentFile = this.app.vault.getAbstractFileByPath(parseLinktext(item.link).path);
-				if (!attachmentFile) {
-					attachmentFile = this.app.metadataCache.getFirstLinkpathDest(file_path, file_path);
-				}
-				// Check if it exists and is of the correct type
-				if (attachmentFile instanceof TFile) {
-					// Create the new full name with path
-					let parent_path = attachmentFile.path.substring(0, attachmentFile.path.length - attachmentFile.name.length);
-					// let path = attachmentFile.path.replace(item.link, "");
-					let newName = [file.basename, this.settings.imageFormat, num].join(" ") + "." + attachmentFile.extension;
-					let fullName = parent_path + newName;
-					// Check wether destination is existed
-					let destinationFile = this.app.vault.getAbstractFileByPath(fullName);
-					if (destinationFile && destinationFile !== attachmentFile) {
-						await this.app.fileManager.renameFile(attachmentFile, parent_path + "tmp_" + newName);
-					} else {
-						await this.app.fileManager.renameFile(attachmentFile, fullName);
+			// Create a list of attachments, classified by types
+			let attachmentList: AttachmentList = {};
+			for (let item of attachments.embeds) {
+				for (let [fileType, fileExtensions] of Object.entries(extensions)) {
+					let attachmentExtension = item.link.split(".").pop();
+					if (fileExtensions.contains(attachmentExtension)) {
+						if (!attachmentList.hasOwnProperty(fileType)) {
+							attachmentList[fileType] = [];
+						}
+						// Find the attachment file
+						let file_path = parseLinktext(item.link).path;
+						let attachmentFile = this.app.vault.getAbstractFileByPath(file_path);
+						if (!attachmentFile) {
+							attachmentFile = this.app.metadataCache.getFirstLinkpathDest(file_path, file_path);
+						}
+						// Avoid duplication
+						if (!attachmentList[fileType].contains(attachmentFile)) {
+							attachmentList[fileType].push(attachmentFile);
+						}
 					}
-					// console.log(uniqueList)
-					num++;
+				}
+			}
+			// Rename the attachments
+			for (let [fileType, attachmentFiles] of Object.entries(attachmentList)) {
+				// Check if it exists and is of the correct type
+				let num = 1;
+				for (let attachmentFile of attachmentFiles) {
+					if (attachmentFile instanceof TFile) {
+						// Create the new full name with path
+						let parent_path = attachmentFile.path.substring(0, attachmentFile.path.length - attachmentFile.name.length);
+						let newName = [file.basename, this.settings[fileType], num].join(" ") + "." + attachmentFile.extension;
+						let fullName = parent_path + newName;
+						// Check wether destination is existed
+						let destinationFile = this.app.vault.getAbstractFileByPath(fullName);
+						if (destinationFile && destinationFile !== attachmentFile) {
+							await this.app.fileManager.renameFile(attachmentFile, parent_path + "tmp_" + newName);
+						} else {
+							await this.app.fileManager.renameFile(attachmentFile, fullName);
+						}
+						num++;
+					}
 				}
 			}
 		}
@@ -98,7 +126,7 @@ class AttachmentNameFormattingSettingTab extends PluginSettingTab {
 		containerEl.createEl('p', { text: 'This plugin will format all attachments in the format: "filename attachmentType indexNumber.xxx".' });
 		containerEl.createEl('p', { text: 'Each type of attachment will have individual index.' });
 		containerEl.createEl('p', { text: 'Only recognize the file type that can be recognized by Obsidian.' });
-		containerEl.createEl('p', { text: '(Only support image right now)' });
+		containerEl.createEl('p', { text: '(Do not "webm" extension in audio and video right now)' });
 
 		new Setting(containerEl)
 			.setName('Format for image')
@@ -107,9 +135,48 @@ class AttachmentNameFormattingSettingTab extends PluginSettingTab {
 			)
 			.addText(text => text
 				.setPlaceholder('image')
-				.setValue(this.plugin.settings.imageFormat === "image" ? "" : this.plugin.settings.imageFormat)
+				.setValue(this.plugin.settings.image === "image" ? "" : this.plugin.settings.image)
 				.onChange(async (value) => {
-					this.plugin.settings.imageFormat = value;
+					this.plugin.settings.image = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Format for audio')
+			.setDesc(
+				'Set the format for audio attachment.',
+			)
+			.addText(text => text
+				.setPlaceholder('audio')
+				.setValue(this.plugin.settings.audio === "audio" ? "" : this.plugin.settings.audio)
+				.onChange(async (value) => {
+					this.plugin.settings.audio = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Format for video')
+			.setDesc(
+				'Set the format for video attachment.',
+			)
+			.addText(text => text
+				.setPlaceholder('video')
+				.setValue(this.plugin.settings.video === "video" ? "" : this.plugin.settings.video)
+				.onChange(async (value) => {
+					this.plugin.settings.video = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Format for pdf')
+			.setDesc(
+				'Set the format for pdf attachment.',
+			)
+			.addText(text => text
+				.setPlaceholder('pdf')
+				.setValue(this.plugin.settings.pdf === "pdf" ? "" : this.plugin.settings.pdf)
+				.onChange(async (value) => {
+					this.plugin.settings.pdf = value;
 					await this.plugin.saveSettings();
 				}));
 	}
