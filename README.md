@@ -3,7 +3,13 @@ This plugin will format all attachments in the format: "filename attachmentForma
 
 The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending number from 1 based on the attchmentFormat.
 
-### New Features
+### New Features in 1.3.0
+**The export function only apply on Destop side.**
+- Export attachments in current files.
+- Export all unused attachments in vault.
+- Optional autodeletion after exporting.
+
+### New Features in 1.2.0
 - Support the same attachment embeds mutiple times in one file
 - Support audio, video and pdf now
 - Didn't support the extension "webm" in audio and video right now, because this extension exists in both audio and video
