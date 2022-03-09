@@ -1,6 +1,6 @@
 import { App, Plugin, PluginSettingTab, Setting, TFile, TAbstractFile, Notice, parseLinktext, normalizePath, FileSystemAdapter, Modal, Editor } from 'obsidian';
 const fs = require('fs');
-const JSZip = require('JSZip');
+const JSZip = require('jszip');
 
 interface AttachmentNameFormattingSettings {
 	image: string;
