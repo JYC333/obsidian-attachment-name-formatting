@@ -324,6 +324,7 @@ class AttachmentNameFormattingSettingTab extends PluginSettingTab {
 				'Toggle the display of export attachments in current file ribbon.'
 			)
 			.addToggle(toggle => toggle
+				.setValue(!ribbons.exportCurrentFile.hidden)
 				.onChange(async (value) => {
 					ribbons.exportCurrentFile.hidden = !value;
 				})
@@ -335,6 +336,7 @@ class AttachmentNameFormattingSettingTab extends PluginSettingTab {
 				'Autodeletion after exporting attachments in current file.'
 			)
 			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.exportCurrentDeletion)
 				.onChange(async (value) => {
 					this.plugin.settings.exportCurrentDeletion = value;
 					if (value) {
@@ -351,6 +353,7 @@ class AttachmentNameFormattingSettingTab extends PluginSettingTab {
 				'Toggle the display of export unused attachments ribbon. Will take long time for a large vault.'
 			)
 			.addToggle(toggle => toggle
+				.setValue(!ribbons.exportUnusesdFile.hidden)
 				.onChange(async (value) => {
 					ribbons.exportUnusesdFile.hidden = !value;
 				})
@@ -362,6 +365,7 @@ class AttachmentNameFormattingSettingTab extends PluginSettingTab {
 				'Autodeletion after exporting unused attachments in vault.'
 			)
 			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.exportUnusedDeletion)
 				.onChange(async (value) => {
 					this.plugin.settings.exportUnusedDeletion = value;
 					if (value) {
