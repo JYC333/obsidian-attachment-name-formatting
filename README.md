@@ -3,6 +3,10 @@ This plugin will format all attachments in the format: "filename attachmentForma
 
 The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending number from 1 based on the attchmentFormat.
 
+### New Features in 1.4.0
+- Add copy attachment path option when right-click on the attachment link.
+- Provide two options, absolute path and relative path (according to the vault path), default with relative path.
+
 ### New Features in 1.3.0
 **The export function only apply on Destop side.**
 - Export attachments in current files.

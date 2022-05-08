@@ -9,6 +9,8 @@ interface AttachmentNameFormattingSettings {
 	pdf: string;
 	exportCurrentDeletion: boolean;
 	exportUnusedDeletion: boolean;
+	copyPath: boolean;
+	copyPathMode: string;
 }
 
 interface AttachmentList {
@@ -27,6 +29,8 @@ const DEFAULT_SETTINGS: AttachmentNameFormattingSettings = {
 	pdf: "pdf",
 	exportCurrentDeletion: false,
 	exportUnusedDeletion: false,
+	copyPath: false,
+	copyPathMode: "Relative",
 }
 
 const extensions = {
@@ -73,6 +77,79 @@ export default class AttachmentNameFormatting extends Plugin {
 		this.registerEvent(
 			this.app.metadataCache.on('changed', (file) => this.handleAttachmentNameFormatting(file)),
 		);
+
+		this.registerEvent(
+			this.app.workspace.on('editor-menu', (menu, editor, view) => {
+				let cursorPosition = editor.getCursor();
+				let content = this.app.workspace.containerEl.getElementsByClassName("cm-active cm-line")[0].childNodes;
+				let linkType = '';
+				let linkContent = '';
+				let linkLength = 0;
+				let linkStart = Infinity;
+				let linkEnd = 0;
+				let linkComplete = false;
+				content.forEach(node => {
+					let nodeText = node.textContent
+
+					if (nodeText === '!' && linkLength < cursorPosition.ch) {
+						linkType = 'MarkdownLink';
+						linkStart = linkLength;
+					}
+					if (nodeText === '![[' && linkLength < cursorPosition.ch) {
+						linkType = 'WikiLink'
+						linkStart = linkLength;
+					}
+					if (linkLength >= linkStart && !linkComplete) {
+						linkContent += nodeText;
+					}
+					linkLength += nodeText.length;
+					if (nodeText == ')' && linkType === 'MarkdownLink') {
+						linkEnd = linkLength;
+						linkComplete = true;
+						if (linkEnd < cursorPosition.ch) {
+							linkStart = Infinity;
+							linkEnd = 0;
+							linkContent = '';
+							linkComplete = false;
+						}
+					}
+					if (nodeText == ']]' && linkType === 'WikiLink') {
+						linkEnd = linkLength;
+						linkComplete = true;
+						if (linkEnd < cursorPosition.ch) {
+							linkStart = Infinity;
+							linkEnd = 0;
+							linkContent = '';
+							linkComplete = false;
+						}
+					}
+				})
+				// Should have a better way to get whether it is right-click on a link
+				if (menu.items.length > 1 && this.settings.copyPath) {
+					menu.addItem((item) => {
+						item
+							.setTitle("Copy Attachment Path")
+							.setIcon("document")
+							.onClick(async () => {
+								let filename = linkContent.replace(/!|\[|\]|\(|\)/g, '').replace(/%20/g, ' ');
+								let file_path = parseLinktext(filename).path;
+								let attachmentFile = this.app.vault.getAbstractFileByPath(file_path);
+								if (!attachmentFile) {
+									attachmentFile = this.app.metadataCache.getFirstLinkpathDest(file_path, file_path);
+								}
+								let full_path;
+								if (this.settings.copyPathMode === 'Relative') {
+									full_path = './' + attachmentFile.path
+								}
+								if (this.settings.copyPathMode === 'Absolute') {
+									full_path = this.app.vault.adapter.basePath.replace(/\\/g, '/') + '/' + attachmentFile.path;
+								}
+								navigator.clipboard.writeText(full_path);
+							})
+					})
+				}
+			})
+		)
 	}
 
 	async loadSettings() {
@@ -375,6 +452,34 @@ class AttachmentNameFormattingSettingTab extends PluginSettingTab {
 				})
 			)
 
+		containerEl.createEl('h2', { text: 'Right-Click Menu Setting' });
+
+		new Setting(containerEl)
+			.setName('Copy attachment link')
+			.setDesc(
+				'Enable copy attachment link item in right-click menu.'
+			)
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.copyPath)
+				.onChange(async (value) => {
+					this.plugin.settings.copyPath = value;
+					await this.plugin.saveSettings();
+				})
+			)
+
+		new Setting(containerEl)
+			.setName('Copy attachment link')
+			.setDesc(
+				'Autodeletion after exporting unused attachments in vault.'
+			)
+			.addDropdown(dropDown => {
+				dropDown.addOption('Relative', 'Relative');
+				dropDown.addOption('Absolute', 'Absolute');
+				dropDown.onChange(async (value) => {
+					this.plugin.settings.copyPathMode = value;
+					await this.plugin.saveSettings();
+				});
+			})
 	}
 }
 
