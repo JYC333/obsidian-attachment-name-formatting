@@ -78,6 +78,15 @@ export default class AttachmentNameFormatting extends Plugin {
 			this.app.metadataCache.on('changed', (file) => this.handleAttachmentNameFormatting(file)),
 		);
 
+		this.addCommand({
+			id: 'attachments-rescan-command',
+			name: 'Rescan Attachments in Current File',
+			callback: () => {
+				let file = this.app.workspace.getActiveFile();
+				this.handleAttachmentNameFormatting(file);
+			}
+		});
+
 		this.registerEvent(
 			this.app.workspace.on('editor-menu', (menu, editor, view) => {
 				let cursorPosition = editor.getCursor();
@@ -172,9 +181,12 @@ export default class AttachmentNameFormatting extends Plugin {
 			return;
 		}
 
+		console.log("Formatting attachments...");
+
 		// Get the metadata of the active file
 		const attachments = this.app.metadataCache.getFileCache(file);
 		// Check whether the file has attachments
+		console.log("Getting attachments list...");
 		if (attachments.hasOwnProperty("embeds")) {
 			// Create a list of attachments, classified by types
 			let attachmentList: AttachmentList = {};
@@ -198,7 +210,9 @@ export default class AttachmentNameFormatting extends Plugin {
 					}
 				}
 			}
+			console.log("Attachment list:", attachmentList);
 			// Rename the attachments
+			console.log("Renaming attachments...");
 			for (let [fileType, attachmentFiles] of Object.entries(attachmentList)) {
 				// Check if it exists and is of the correct type
 				let num = 1;
@@ -212,13 +226,17 @@ export default class AttachmentNameFormatting extends Plugin {
 						let destinationFile = this.app.vault.getAbstractFileByPath(fullName);
 						if (destinationFile && destinationFile !== attachmentFile) {
 							await this.app.fileManager.renameFile(attachmentFile, parent_path + "tmp_" + newName);
+							console.log("Rename attachment \"" + attachmentFile.name + "\" to \"" + newName + "\"");
 						} else {
 							await this.app.fileManager.renameFile(attachmentFile, fullName);
+							console.log("Rename attachment \"" + attachmentFile.name + "\" to \"" + newName + "\"");
 						}
 						num++;
 					}
 				}
 			}
+		} else {
+			console.log("No attachments found...");
 		}
 	};
 
@@ -226,18 +244,23 @@ export default class AttachmentNameFormatting extends Plugin {
 	* Export the attachments in the active file when it has
 	*/
 	async handleAttachmentExport() {
+		console.log("Exporting attachments...");
+
 		// Create new JSZip instance
 		let zip = new JSZip();
 
 		// Get the active file
 		let file = this.app.workspace.getActiveFile()
 		const attachments = this.app.metadataCache.getFileCache(file);
+		console.log("Getting attachments list...");
 		if (attachments.hasOwnProperty("embeds")) {
 			for (let item of attachments.embeds) {
 				for (let [fileType, fileExtensions] of Object.entries(extensions)) {
 					let attachmentExtension = item.link.split(".").pop();
+					console.log("Collecting attachments...");
 					if (fileExtensions.contains(attachmentExtension)) {
 						let file_path = normalizePath(this.app.vault.adapter.basePath + '\\' + parseLinktext(item.link).path);
+						console.log("Get attachment", file_path);
 						// Get the attachment and write into JSZip instance
 						await FileSystemAdapter.readLocalFile(file_path)
 							.then(data => zip.file(normalizePath(fileType + '\\' + item.link), data))
@@ -246,17 +269,20 @@ export default class AttachmentNameFormatting extends Plugin {
 			}
 
 			// Save zip file to the root folder
+			console.log("Saving attachemnts...");
 			zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
 				.pipe(fs.createWriteStream(normalizePath(this.app.vault.adapter.basePath + '/' + file.basename + '_Attachments.zip')))
 				.on('finish', function () {
 					// Send the finish message
 					new Notice(file.basename + ' attachments exported.');
 				});
+			console.log("Saving Done...");
 
 			let content = '';
 			await this.app.vault.cachedRead(file).then(data => content = data);
 
 			if (this.settings.exportCurrentDeletion) {
+				console.log("Deleting attachments...");
 				for (let item of attachments.embeds) {
 					let file_path = parseLinktext(item.link).path;
 					let attachmentFile = this.app.vault.getAbstractFileByPath(file_path);
@@ -264,10 +290,14 @@ export default class AttachmentNameFormatting extends Plugin {
 						attachmentFile = this.app.metadataCache.getFirstLinkpathDest(file_path, file_path);
 					}
 					content = content.replace(item.original, '');
+					console.log("Delete attachment", attachmentFile.name);
 					await this.app.vault.delete(attachmentFile);
 				}
 				await this.app.vault.modify(file, content);
+				console.log("Deleting Done...");
 			}
+		} else {
+			console.log("No attachments found...");
 		}
 	};
 
@@ -275,6 +305,8 @@ export default class AttachmentNameFormatting extends Plugin {
 	* Export the unused attachments in all files
 	*/
 	async handleUnusedAttachmentExport() {
+		console.log("Exporting unused attachments...");
+
 		let files = this.app.vault.getFiles();
 		let mdFiles = this.app.vault.getMarkdownFiles();
 		let attachmentFiles = files.filter(file => !mdFiles.contains(file));
@@ -284,6 +316,7 @@ export default class AttachmentNameFormatting extends Plugin {
 		attachmentFiles = attachmentFiles.filter(file => allExtensions.contains(file.extension));
 
 		// Get all Unused attachments
+		console.log("Getting all unused attachments...");
 		for (let mdfile of mdFiles) {
 			let attachments = this.app.metadataCache.getFileCache(mdfile);
 			if (attachments.hasOwnProperty("embeds")) {
@@ -306,17 +339,22 @@ export default class AttachmentNameFormatting extends Plugin {
 		}
 
 		// Save zip file to the root folder
+		console.log("Saving attachemnts...");
 		zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
 			.pipe(fs.createWriteStream(normalizePath(this.app.vault.adapter.basePath + '/Unused_Attachments.zip')))
 			.on('finish', function () {
 				// Send the finish message
 				new Notice('Unused attachments exported.');
 			});
+		console.log("Saving Done...");
 
 		if (this.settings.exportCurrentDeletion) {
+			console.log("Deleting attachments...");
 			for (let file of attachmentFiles) {
+				console.log("Delete attachment", file.name);
 				await this.app.vault.delete(file);
 			}
+			console.log("Deleting Done...");
 		}
 	}
 }

@@ -3,6 +3,10 @@ This plugin will format all attachments in the format: "filename attachmentForma
 
 The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending number from 1 based on the attchmentFormat.
 
+### New in 1.4.1
+- Add some console outputs for debug.
+- Add rescan command for manual rescan.
+
 ### New Features in 1.4.0
 - Add copy attachment path option when right-click on the attachment link.
 - Provide two options, absolute path and relative path (according to the vault path), default with relative path.
