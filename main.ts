@@ -1,6 +1,8 @@
-import { App, Plugin, PluginSettingTab, Setting, TFile, TAbstractFile, Notice, parseLinktext, normalizePath, FileSystemAdapter, Modal } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, TFile, TAbstractFile, Notice, parseLinktext, normalizePath, FileSystemAdapter, Modal, Menu, Editor } from 'obsidian';
 const fs = require('fs');
 const JSZip = require('jszip');
+
+var timeInterval = Date.now();
 
 interface AttachmentNameFormattingSettings {
 	image: string;
@@ -53,6 +55,11 @@ export default class AttachmentNameFormatting extends Plugin {
 
 		this.addSettingTab(new AttachmentNameFormattingSettingTab(this.app, this));
 
+		// Format the attachments' name
+		this.registerEvent(
+			this.app.metadataCache.on('changed', (file) => this.handleAttachmentNameFormatting(file)),
+		);
+
 		// Export attachments in current file
 		ribbons.exportCurrentFile = this.addRibbonIcon('sheets-in-box', 'Export Attachments', () => this.handleAttachmentExport());
 		ribbons.exportCurrentFile.hidden = true;
@@ -73,11 +80,7 @@ export default class AttachmentNameFormatting extends Plugin {
 			callback: () => this.handleUnusedAttachmentExport()
 		});
 
-		// Format the attachments' name
-		this.registerEvent(
-			this.app.metadataCache.on('changed', (file) => this.handleAttachmentNameFormatting(file)),
-		);
-
+		// Resacn the attachments command
 		this.addCommand({
 			id: 'attachments-rescan-command',
 			name: 'Rescan Attachments in Current File',
@@ -87,78 +90,8 @@ export default class AttachmentNameFormatting extends Plugin {
 			}
 		});
 
-		this.registerEvent(
-			this.app.workspace.on('editor-menu', (menu, editor, view) => {
-				let cursorPosition = editor.getCursor();
-				let content = this.app.workspace.containerEl.getElementsByClassName("cm-active cm-line")[0].childNodes;
-				let linkType = '';
-				let linkContent = '';
-				let linkLength = 0;
-				let linkStart = Infinity;
-				let linkEnd = 0;
-				let linkComplete = false;
-				content.forEach(node => {
-					let nodeText = node.textContent
-
-					if (nodeText === '!' && linkLength < cursorPosition.ch) {
-						linkType = 'MarkdownLink';
-						linkStart = linkLength;
-					}
-					if (nodeText === '![[' && linkLength < cursorPosition.ch) {
-						linkType = 'WikiLink'
-						linkStart = linkLength;
-					}
-					if (linkLength >= linkStart && !linkComplete) {
-						linkContent += nodeText;
-					}
-					linkLength += nodeText.length;
-					if (nodeText == ')' && linkType === 'MarkdownLink') {
-						linkEnd = linkLength;
-						linkComplete = true;
-						if (linkEnd < cursorPosition.ch) {
-							linkStart = Infinity;
-							linkEnd = 0;
-							linkContent = '';
-							linkComplete = false;
-						}
-					}
-					if (nodeText == ']]' && linkType === 'WikiLink') {
-						linkEnd = linkLength;
-						linkComplete = true;
-						if (linkEnd < cursorPosition.ch) {
-							linkStart = Infinity;
-							linkEnd = 0;
-							linkContent = '';
-							linkComplete = false;
-						}
-					}
-				})
-				// Should have a better way to get whether it is right-click on a link
-				if (menu.items.length > 1 && this.settings.copyPath) {
-					menu.addItem((item) => {
-						item
-							.setTitle("Copy Attachment Path")
-							.setIcon("document")
-							.onClick(async () => {
-								let filename = linkContent.replace(/!|\[|\]|\(|\)/g, '').replace(/%20/g, ' ');
-								let file_path = parseLinktext(filename).path;
-								let attachmentFile = this.app.vault.getAbstractFileByPath(file_path);
-								if (!attachmentFile) {
-									attachmentFile = this.app.metadataCache.getFirstLinkpathDest(file_path, file_path);
-								}
-								let full_path;
-								if (this.settings.copyPathMode === 'Relative') {
-									full_path = './' + attachmentFile.path
-								}
-								if (this.settings.copyPathMode === 'Absolute') {
-									full_path = this.app.vault.adapter.basePath.replace(/\\/g, '/') + '/' + attachmentFile.path;
-								}
-								navigator.clipboard.writeText(full_path);
-							})
-					})
-				}
-			})
-		)
+		// Copy the attachment's relative/absolute path
+		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor) => this.handleCopyAttachmentPath(menu, editor)));
 	}
 
 	async loadSettings() {
@@ -177,9 +110,10 @@ export default class AttachmentNameFormatting extends Plugin {
 	async handleAttachmentNameFormatting(file: TFile) {
 		// If currently opened file is not the same as the one that trigger the event,
 		// skip this is to make sure other events don't trigger this plugin
-		if (this.app.workspace.getActiveFile() !== file) {
+		if (this.app.workspace.getActiveFile() !== file || Date.now() - timeInterval < 2000) {
 			return;
 		}
+		timeInterval = Date.now();
 
 		console.log("Formatting attachments...");
 
@@ -214,23 +148,27 @@ export default class AttachmentNameFormatting extends Plugin {
 			// Rename the attachments
 			console.log("Renaming attachments...");
 			for (let [fileType, attachmentFiles] of Object.entries(attachmentList)) {
-				// Check if it exists and is of the correct type
 				let num = 1;
 				for (let attachmentFile of attachmentFiles) {
+					// Check if it exists and is of the correct type
 					if (attachmentFile instanceof TFile) {
 						// Create the new full name with path
 						let parent_path = attachmentFile.path.substring(0, attachmentFile.path.length - attachmentFile.name.length);
 						let newName = [file.basename, this.settings[fileType], num].join(" ") + "." + attachmentFile.extension;
 						let fullName = parent_path + newName;
-						// Check wether destination is existed
+						
+						// Check wether destination is existed, if existed, rename the destination file to a tmp name
 						let destinationFile = this.app.vault.getAbstractFileByPath(fullName);
 						if (destinationFile && destinationFile !== attachmentFile) {
-							await this.app.fileManager.renameFile(attachmentFile, parent_path + "tmp_" + newName);
-							console.log("Rename attachment \"" + attachmentFile.name + "\" to \"" + newName + "\"");
-						} else {
-							await this.app.fileManager.renameFile(attachmentFile, fullName);
-							console.log("Rename attachment \"" + attachmentFile.name + "\" to \"" + newName + "\"");
+							let destinationFile_path = destinationFile.path.substring(0, destinationFile.path.length - destinationFile.name.length);
+							let tmpName = "tmp" + Date.now() + "_" + destinationFile.name;
+							console.log("Rename attachment \"" + destinationFile.name + "\" to \"" + destinationFile_path + tmpName + "\"");
+							await this.app.fileManager.renameFile(destinationFile, destinationFile_path + tmpName);
 						}
+
+						console.log("Rename attachment \"" + attachmentFile.name + "\" to \"" + newName + "\"");
+						await this.app.fileManager.renameFile(attachmentFile, fullName);
+
 						num++;
 					}
 				}
@@ -356,7 +294,81 @@ export default class AttachmentNameFormatting extends Plugin {
 			}
 			console.log("Deleting Done...");
 		}
-	}
+	};
+
+	/*
+	* Copy the attachment's relative/absolute path
+	*/
+	async handleCopyAttachmentPath(menu: Menu, editor: Editor) {
+		let cursorPosition = editor.getCursor();
+		let content = this.app.workspace.containerEl.getElementsByClassName("cm-active cm-line")[0].childNodes;
+		let linkType = '';
+		let linkContent = '';
+		let linkLength = 0;
+		let linkStart = Infinity;
+		let linkEnd = 0;
+		let linkComplete = false;
+		content.forEach(node => {
+			let nodeText = node.textContent
+
+			if (nodeText === '!' && linkLength < cursorPosition.ch) {
+				linkType = 'MarkdownLink';
+				linkStart = linkLength;
+			}
+			if (nodeText === '![[' && linkLength < cursorPosition.ch) {
+				linkType = 'WikiLink'
+				linkStart = linkLength;
+			}
+			if (linkLength >= linkStart && !linkComplete) {
+				linkContent += nodeText;
+			}
+			linkLength += nodeText.length;
+			if (nodeText == ')' && linkType === 'MarkdownLink') {
+				linkEnd = linkLength;
+				linkComplete = true;
+				if (linkEnd < cursorPosition.ch) {
+					linkStart = Infinity;
+					linkEnd = 0;
+					linkContent = '';
+					linkComplete = false;
+				}
+			}
+			if (nodeText == ']]' && linkType === 'WikiLink') {
+				linkEnd = linkLength;
+				linkComplete = true;
+				if (linkEnd < cursorPosition.ch) {
+					linkStart = Infinity;
+					linkEnd = 0;
+					linkContent = '';
+					linkComplete = false;
+				}
+			}
+		})
+		// Should have a better way to get whether it is right-click on a link
+		if (menu.items.length > 1 && this.settings.copyPath) {
+			menu.addItem((item) => {
+				item
+					.setTitle("Copy Attachment Path")
+					.setIcon("document")
+					.onClick(async () => {
+						let filename = linkContent.replace(/!|\[|\]|\(|\)/g, '').replace(/%20/g, ' ');
+						let file_path = parseLinktext(filename).path;
+						let attachmentFile = this.app.vault.getAbstractFileByPath(file_path);
+						if (!attachmentFile) {
+							attachmentFile = this.app.metadataCache.getFirstLinkpathDest(file_path, file_path);
+						}
+						let full_path;
+						if (this.settings.copyPathMode === 'Relative') {
+							full_path = './' + attachmentFile.path
+						}
+						if (this.settings.copyPathMode === 'Absolute') {
+							full_path = this.app.vault.adapter.basePath.replace(/\\/g, '/') + '/' + attachmentFile.path;
+						}
+						navigator.clipboard.writeText(full_path);
+					})
+			})
+		}
+	};
 }
 
 class AttachmentNameFormattingSettingTab extends PluginSettingTab {
