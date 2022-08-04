@@ -154,7 +154,7 @@ export default class AttachmentNameFormatting extends Plugin {
 					if (attachmentFile instanceof TFile) {
 						// Create the new full name with path
 						let parent_path = attachmentFile.path.substring(0, attachmentFile.path.length - attachmentFile.name.length);
-						let newName = [file.basename, this.settings[fileType], num].join(" ") + "." + attachmentFile.extension;
+						let newName = [file.basename, this.settings[fileType], num].join("_") + "." + attachmentFile.extension;
 						let fullName = parent_path + newName;
 						
 						// Check wether destination is existed, if existed, rename the destination file to a tmp name
