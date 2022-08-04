@@ -23,6 +23,8 @@ The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending n
 - Support the situation that attachments have same name but under different path.
 - When change the setting "Files & Links -> Default location for new attachments", sync all attachments' location with this setting. (Could be disable)
 
+### Change in 1.4.3
+- Using "-" instead of space for the attachment naming
 
 ### New in 1.4.2
 - Change the renaming strategy, make the renaming process more stable
