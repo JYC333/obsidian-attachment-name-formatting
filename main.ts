@@ -9,6 +9,7 @@ interface AttachmentNameFormattingSettings {
 	audio: string;
 	video: string;
 	pdf: string;
+	connector: string;
 	exportCurrentDeletion: boolean;
 	exportUnusedDeletion: boolean;
 	copyPath: boolean;
@@ -29,6 +30,7 @@ const DEFAULT_SETTINGS: AttachmentNameFormattingSettings = {
 	audio: "audio",
 	video: "video",
 	pdf: "pdf",
+	connector: "_",
 	exportCurrentDeletion: false,
 	exportUnusedDeletion: false,
 	copyPath: false,
@@ -38,7 +40,7 @@ const DEFAULT_SETTINGS: AttachmentNameFormattingSettings = {
 const extensions = {
 	image: ["png", "jpg", "jpeg", "gif", "bmp", "svg"],
 	audio: ["mp3", "wav", "m4a", "ogg", "3gp", "flac"], // "webm"
-	video: ["map", "ogv"], // "webm"
+	video: ["mp4", "ogv", "mov", "mkv"], // "webm"
 	pdf: ["pdf"],
 };
 
@@ -154,9 +156,9 @@ export default class AttachmentNameFormatting extends Plugin {
 					if (attachmentFile instanceof TFile) {
 						// Create the new full name with path
 						let parent_path = attachmentFile.path.substring(0, attachmentFile.path.length - attachmentFile.name.length);
-						let newName = [file.basename, this.settings[fileType], num].join("_") + "." + attachmentFile.extension;
+						let newName = [file.basename, this.settings[fileType], num].join(this.settings.connector) + "." + attachmentFile.extension;
 						let fullName = parent_path + newName;
-						
+
 						// Check wether destination is existed, if existed, rename the destination file to a tmp name
 						let destinationFile = this.app.vault.getAbstractFileByPath(fullName);
 						if (destinationFile && destinationFile !== attachmentFile) {
@@ -388,8 +390,31 @@ class AttachmentNameFormattingSettingTab extends PluginSettingTab {
 		containerEl.createEl('p', { text: 'This plugin will format all attachments in the format: "filename attachmentType indexNumber.xxx".' });
 		containerEl.createEl('p', { text: 'Each type of attachment will have individual index.' });
 		containerEl.createEl('p', { text: 'Only recognize the file type that can be recognized by Obsidian.' });
-		containerEl.createEl('p', { text: '(Do not have "webm" extension in audio and video right now)' });
+		containerEl.createEl('h3', { text: 'Supported file formats' });
+		containerEl.createEl('p', { text: 'Image files: png, jpg, jpeg, gif, bmp, svg' });
+		containerEl.createEl('p', { text: 'Audio files: mp3, wav, m4a, ogg, 3gp, flac' });
+		containerEl.createEl('p', { text: 'Video files: mp4, ogv, mov, mkv' });
+		containerEl.createEl('p', { text: 'PDF files: pdf' });
+		containerEl.createEl('p', { text: 'Do not have "webm" extension in audio and video right now' });
 		containerEl.createEl('h2', { text: 'Attachments Format Setting' });
+
+		new Setting(containerEl)
+			.setName('Format for connector')
+			.setDesc(
+				'Set the format for connector between file name and attachment name.'
+			)
+			.addText(text => text
+				.setPlaceholder('_')
+				.setValue(this.plugin.settings.connector === "_" ? "" : this.plugin.settings.connector)
+				.onChange(async (value) => {
+					let fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
+					if (fileNamepatn.test(value) || value === "") {
+						new FilenameWarningModal(this.app).open();
+						value = "_";
+					}
+					this.plugin.settings.connector = value;
+					await this.plugin.saveSettings();
+				}));
 
 		new Setting(containerEl)
 			.setName('Format for image')
@@ -467,7 +492,7 @@ class AttachmentNameFormattingSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.exportCurrentDeletion = value;
 					if (value) {
-						new WarningModal(this.app).open();
+						new DeletionWarningModal(this.app).open();
 					}
 					await this.plugin.saveSettings();
 				})
@@ -496,7 +521,7 @@ class AttachmentNameFormattingSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.exportUnusedDeletion = value;
 					if (value) {
-						new WarningModal(this.app).open();
+						new DeletionWarningModal(this.app).open();
 					}
 					await this.plugin.saveSettings();
 				})
@@ -533,7 +558,7 @@ class AttachmentNameFormattingSettingTab extends PluginSettingTab {
 	}
 }
 
-class WarningModal extends Modal {
+class DeletionWarningModal extends Modal {
 	constructor(app: App) {
 		super(app);
 	}
@@ -541,6 +566,22 @@ class WarningModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.setText('Will delete the attachments and content after export!');
+	}
+
+	onClose() {
+		const { contentEl } = this;
+		contentEl.empty();
+	}
+}
+
+class FilenameWarningModal extends Modal {
+	constructor(app: App) {
+		super(app);
+	}
+
+	onOpen() {
+		const { contentEl } = this;
+		contentEl.setText('Invalid/No connector for filename, will use "_" as connector!');
 	}
 
 	onClose() {
