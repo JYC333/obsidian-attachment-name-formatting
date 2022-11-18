@@ -14,9 +14,11 @@
       "ES5",
       "ES6",
       "ES7"
-    ]
+    ],
+    "paths": {
+      "src": ["src/*"]
+    }
   },
-  "include": [
-    "**/*.ts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules/*", "src/jszip.js"]
 }
