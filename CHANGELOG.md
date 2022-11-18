@@ -1,3 +1,12 @@
+## [1.4.6](https://github.com/JYC333/obsidian-file-structure-format/compare/1.4.5...1.4.6) (2022-11-18)
+
+
+### Bug Fixes
+
+* ribbon fix and setting fix ([7314029](https://github.com/JYC333/obsidian-file-structure-format/commit/7314029a4911c64fa3c2189f062eb4d6e8866398))
+
+
+
 ## [1.4.5](https://github.com/JYC333/obsidian-file-structure-format/compare/1.4.4...1.4.5) (2022-09-28)
 - Recognize "./" and "../" in the attachment path.
 
