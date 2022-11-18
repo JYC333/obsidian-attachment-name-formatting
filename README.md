@@ -29,39 +29,5 @@ The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending n
 - Support the situation that attachments have same name but under different path.
 - When change the setting "Files & Links -> Default location for new attachments", sync all attachments' location with this setting. (Could be disable)
 
-### Fix in 1.4.5
-- Recognize "./" and "../" in the attachment path.
-
-### Change in 1.4.4
-- Add setting for connector, now you can customize the connector.
-- Update Readme and the description in the setting.
-- Update the support file type for video files (mov, mkv).
-
-### Change in 1.4.3
-- Using "_" instead of space for the attachment naming
-
-### New in 1.4.2
-- Change the renaming strategy, make the renaming process more stable
-- Renaming will not trigger everytime when you change the note, it will have one second intervel after the last renaming
-
-### New in 1.4.1
-- Add some console outputs for debug.
-- Add rescan command for manual rescan.
-
-### New Features in 1.4.0
-- Add copy attachment path option when right-click on the attachment link.
-- Provide two options, absolute path and relative path (according to the vault path), default with relative path.
-
-### New Features in 1.3.0
-**The export function only apply on Destop side.**
-- Export attachments in current files.
-- Export all unused attachments in vault.
-- Optional autodeletion after exporting.
-
-### New Features in 1.2.0
-- Support the same attachment embeds mutiple times in one file
-- Support audio, video and pdf now
-- Didn't support the extension "webm" in audio and video right now, because this extension exists in both audio and video
-
 ### LICENSE
 MIT
