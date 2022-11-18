@@ -172,7 +172,7 @@ export class ANFSettingTab extends PluginSettingTab {
 		containerEl.createEl("h2", { text: "Ribbons Setting" });
 
 		new Setting(containerEl)
-			.setName("Export Attachments in Current File")
+			.setName("Ribbon: Export Attachments in Current File")
 			.setDesc(
 				"Toggle the display of export attachments in current file ribbon."
 			)
@@ -212,7 +212,7 @@ export class ANFSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Export Unused Attachments in Vault")
+			.setName("Ribbon: Export Unused Attachments in Vault")
 			.setDesc(
 				"Toggle the display of export unused attachments ribbon. Will take long time for a large vault."
 			)
