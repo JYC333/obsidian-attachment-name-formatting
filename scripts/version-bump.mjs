@@ -1,7 +1,12 @@
 import { readFileSync, writeFileSync } from "fs";
 
-const targetVersion = process.env.npm_package_version;
-console.log(process.env.npm_package_version);
+// eslint-disable-next-line no-undef
+const targetVersion = process.argv.slice(2).pop();
+
+// update version in package.json
+let packageJson = JSON.parse(readFileSync("package.json", "utf8"));
+packageJson.version = targetVersion;
+writeFileSync("package.json", JSON.stringify(packageJson, null, "\t"));
 
 // read minAppVersion from manifest.json and bump version to target version
 let manifest = JSON.parse(readFileSync("manifest.json", "utf8"));

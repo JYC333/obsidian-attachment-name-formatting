@@ -1,4 +1,4 @@
-## [1.4.6](https://github.com/JYC333/obsidian-file-structure-format/compare/1.4.5...1.4.6) (2022-11-18)
+## [1.4.6](https://github.com/JYC333/obsidian-file-structure-format/compare/1.4.5...1.4.6) (2022-11-19)
 
 
 ### Bug Fixes
