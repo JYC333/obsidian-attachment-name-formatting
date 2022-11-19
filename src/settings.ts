@@ -1,17 +1,8 @@
+/* eslint-disable no-mixed-spaces-and-tabs */
 import { App, PluginSettingTab, Setting, Modal } from "obsidian";
 import AttachmentNameFormatting from "./main";
-
-export interface ANFSettings {
-	image: string;
-	audio: string;
-	video: string;
-	pdf: string;
-	connector: string;
-	exportCurrentDeletion: boolean;
-	exportUnusedDeletion: boolean;
-	copyPath: boolean;
-	copyPathMode: string;
-}
+import { ANFSettings } from "./types";
+import { DEFAULT_SETTINGS, ATTACHMENT_TYPE } from "./constants";
 
 interface RibbonList {
 	exportCurrentFile: HTMLElement;
@@ -21,18 +12,6 @@ interface RibbonList {
 const ribbons: RibbonList = {
 	exportCurrentFile: null,
 	exportUnusesdFile: null,
-};
-
-export const DEFAULT_SETTINGS: ANFSettings = {
-	image: "image",
-	audio: "audio",
-	video: "video",
-	pdf: "pdf",
-	connector: "_",
-	exportCurrentDeletion: false,
-	exportUnusedDeletion: false,
-	copyPath: false,
-	copyPathMode: "Relative",
 };
 
 export class ANFSettingTab extends PluginSettingTab {
@@ -97,77 +76,46 @@ export class ANFSettingTab extends PluginSettingTab {
 					})
 			);
 
-		new Setting(containerEl)
-			.setName("Format for image")
-			.setDesc("Set the format for image attachment.")
-			.addText((text) =>
-				text
-					.setPlaceholder("image")
-					.setValue(
-						this.plugin.settings.image === "image"
-							? ""
-							: this.plugin.settings.image
-					)
+		for (const item of ATTACHMENT_TYPE) {
+			const attachmentType = item as keyof ANFSettings;
+			const typeSetting = new Setting(containerEl)
+				.setName(`Format for ${attachmentType}`)
+				.setDesc(`Set the format for ${attachmentType} attachment.`);
+			const attachmentEnable = ("enable" +
+				attachmentType.slice(0, 1).toUpperCase() +
+				attachmentType.slice(1)) as keyof ANFSettings;
+			if (this.plugin.settings[attachmentEnable]) {
+				typeSetting.addText((text) =>
+					text
+						.setPlaceholder(attachmentType)
+						.setValue(
+							this.plugin.settings[attachmentType] ===
+								attachmentType
+								? ""
+								: (this.plugin.settings[
+										attachmentType
+								  ] as string)
+						)
+						.onChange(async (value) => {
+							this.plugin.settings[attachmentType] = (
+								value === ""
+									? DEFAULT_SETTINGS[attachmentType]
+									: value
+							) as never;
+							await this.plugin.saveSettings();
+						})
+				);
+			}
+			typeSetting.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings[attachmentEnable] as boolean)
 					.onChange(async (value) => {
-						this.plugin.settings.image =
-							value === "" ? DEFAULT_SETTINGS.image : value;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		new Setting(containerEl)
-			.setName("Format for audio")
-			.setDesc("Set the format for audio attachment.")
-			.addText((text) =>
-				text
-					.setPlaceholder("audio")
-					.setValue(
-						this.plugin.settings.audio === "audio"
-							? ""
-							: this.plugin.settings.audio
-					)
-					.onChange(async (value) => {
-						this.plugin.settings.audio =
-							value === "" ? DEFAULT_SETTINGS.audio : value;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		new Setting(containerEl)
-			.setName("Format for video")
-			.setDesc("Set the format for video attachment.")
-			.addText((text) =>
-				text
-					.setPlaceholder("video")
-					.setValue(
-						this.plugin.settings.video === "video"
-							? ""
-							: this.plugin.settings.video
-					)
-					.onChange(async (value) => {
-						this.plugin.settings.video =
-							value === "" ? DEFAULT_SETTINGS.video : value;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		new Setting(containerEl)
-			.setName("Format for pdf")
-			.setDesc("Set the format for pdf attachment.")
-			.addText((text) =>
-				text
-					.setPlaceholder("pdf")
-					.setValue(
-						this.plugin.settings.pdf === "pdf"
-							? ""
-							: this.plugin.settings.pdf
-					)
-					.onChange(async (value) => {
-						this.plugin.settings.pdf =
-							value === "" ? DEFAULT_SETTINGS.pdf : value;
-						await this.plugin.saveSettings();
-					})
-			);
+						this.plugin.settings[attachmentEnable] = value as never;
+						this.typeAvaliablility(value, typeSetting);
+						this.display();
+					});
+			});
+		}
 
 		containerEl.createEl("h2", { text: "Ribbons Setting" });
 
@@ -281,6 +229,32 @@ export class ANFSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				});
 			});
+	}
+
+	typeAvaliablility(available: boolean, attachmentType: Setting) {
+		const attachmentTypeName = attachmentType.nameEl.textContent
+			.split(" ")
+			.pop() as keyof ANFSettings;
+
+		if (available) {
+			attachmentType.addText((text) =>
+				text
+					.setPlaceholder(attachmentTypeName)
+					.setValue(
+						this.plugin.settings[attachmentTypeName] as string
+					)
+					.onChange(async (value) => {
+						this.plugin.settings[attachmentTypeName] = (
+							value === ""
+								? DEFAULT_SETTINGS[attachmentTypeName]
+								: value
+						) as never;
+						await this.plugin.saveSettings();
+					})
+			);
+		} else {
+			attachmentType.components.pop();
+		}
 	}
 }
 

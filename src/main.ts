@@ -9,7 +9,10 @@ import {
 	Menu,
 	Editor,
 } from "obsidian";
-import { ANFSettings, ANFSettingTab, DEFAULT_SETTINGS } from "./settings";
+import { ANFSettings } from "./types";
+import { DEFAULT_SETTINGS } from "./constants";
+import { ANFSettingTab } from "./settings";
+
 const fs = require("fs");
 const JSZip = require("jszip");
 
@@ -112,8 +115,14 @@ export default class AttachmentNameFormatting extends Plugin {
 				for (const [fileType, fileExtensions] of Object.entries(
 					extensions
 				)) {
+					const attachmentEnable = ("enable" +
+						fileType.slice(0, 1).toUpperCase() +
+						fileType.slice(1)) as keyof ANFSettings;
 					const attachmentExtension = item.link.split(".").pop();
-					if (fileExtensions.contains(attachmentExtension)) {
+					if (
+						fileExtensions.contains(attachmentExtension) &&
+						this.settings[attachmentEnable]
+					) {
 						if (!attachmentList.hasOwnProperty(fileType)) {
 							attachmentList[fileType] = [];
 						}
@@ -159,9 +168,11 @@ export default class AttachmentNameFormatting extends Plugin {
 								attachmentFile.name.length
 						);
 						const newName =
-							[file.basename, this.settings[fileType], num].join(
-								this.settings.connector
-							) +
+							[
+								file.basename,
+								this.settings[fileType as keyof ANFSettings],
+								num,
+							].join(this.settings.connector) +
 							"." +
 							attachmentFile.extension;
 						const fullName = parent_path + newName;

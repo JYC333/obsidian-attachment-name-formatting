@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-attachment-name-formattion",
-	"version": "%npm_config_new%",
+	"version": "1.4.7",
 	"description": "Obsidian plugin for formatting attachments name (filename attachmentType indexNumber.xxx)",
 	"main": "main.js",
 	"scripts": {
