@@ -1,9 +1,10 @@
-## [1.4.7](https://github.com/JYC333/obsidian-file-structure-format/compare/1.4.5...1.4.7) (2022-11-19)
+## [1.5.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.4.5...1.5.0) (2022-11-20)
 
 
 ### Features
 
-* allow disable attachment renaming on different attachment type ([0e4f96e](https://github.com/JYC333/obsidian-file-structure-format/commit/0e4f96e86819af1af73631636a887af760064ec9))
+* allow disable attachment renaming on different attachment type ([5a4d92d](https://github.com/JYC333/obsidian-file-structure-format/commit/5a4d92d8af6a4412233d26070a350f50eb107243))
+* feat: allow disable attachment renaming on different attachment type ([c145f82](https://github.com/JYC333/obsidian-file-structure-format/commit/c145f823d5e95bc4c6a79408ffa6057bc28d231a)), closes [#14](https://github.com/JYC333/obsidian-file-structure-format/issues/14)
 
 
 
