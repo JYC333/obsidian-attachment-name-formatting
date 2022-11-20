@@ -91,11 +91,12 @@ export default class AttachmentNameFormatting extends Plugin {
 	 *
 	 * @param	{TFile}	file	The active file
 	 */
-	async handleAttachmentNameFormatting(file: TFile) {
+	async handleAttachmentNameFormatting(file: TFile, multiple = false) {
 		// If currently opened file is not the same as the one that trigger the event,
 		// skip this is to make sure other events don't trigger this plugin
+		// timeInterval make sure the update not too frequent
 		if (
-			this.app.workspace.getActiveFile() !== file ||
+			(this.app.workspace.getActiveFile() !== file && !multiple) ||
 			Date.now() - timeInterval < 2000
 		) {
 			return;

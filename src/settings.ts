@@ -117,7 +117,7 @@ export class ANFSettingTab extends PluginSettingTab {
 			});
 		}
 
-		containerEl.createEl("h2", { text: "Ribbons Setting" });
+		containerEl.createEl("h2", { text: "Export Setting" });
 
 		new Setting(containerEl)
 			.setName("Ribbon: Export Attachments in Current File")
@@ -145,21 +145,6 @@ export class ANFSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Deletion After Exporting Attachments in Current File")
-			.setDesc(
-				"Autodeletion after exporting attachments in current file."
-			)
-			.addToggle((toggle) =>
-				toggle.onChange(async (value) => {
-					this.plugin.settings.exportCurrentDeletion = value;
-					if (value) {
-						new DeletionWarningModal(this.app).open();
-					}
-					await this.plugin.saveSettings();
-				})
-			);
-
-		new Setting(containerEl)
 			.setName("Ribbon: Export Unused Attachments in Vault")
 			.setDesc(
 				"Toggle the display of export unused attachments ribbon. Will take long time for a large vault."
@@ -183,6 +168,21 @@ export class ANFSettingTab extends PluginSettingTab {
 							ribbons.exportUnusesdFile = null;
 						}
 					})
+			);
+
+		new Setting(containerEl)
+			.setName("Deletion After Exporting Attachments in Current File")
+			.setDesc(
+				"Autodeletion after exporting attachments in current file."
+			)
+			.addToggle((toggle) =>
+				toggle.onChange(async (value) => {
+					this.plugin.settings.exportCurrentDeletion = value;
+					if (value) {
+						new DeletionWarningModal(this.app).open();
+					}
+					await this.plugin.saveSettings();
+				})
 			);
 
 		new Setting(containerEl)
