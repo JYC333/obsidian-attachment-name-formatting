@@ -8,15 +8,17 @@ import {
 	FileSystemAdapter,
 	Menu,
 	Editor,
+	TFolder,
 } from "obsidian";
 import { ANFSettings } from "./types";
 import { DEFAULT_SETTINGS } from "./constants";
 import { ANFSettingTab } from "./settings";
+import { FolderScanModal, FolderRenameWarningModal } from "./modals";
 
 const fs = require("fs");
 const JSZip = require("jszip");
 
-let timeInterval = Date.now();
+let timeInterval = new Date();
 
 interface AttachmentList {
 	[key: string]: Array<TAbstractFile>;
@@ -29,11 +31,16 @@ const extensions = {
 	pdf: ["pdf"],
 };
 
+const delay = (n: number) => new Promise((r) => setTimeout(r, n * 1000));
+
 export default class AttachmentNameFormatting extends Plugin {
 	settings: ANFSettings;
+	allFolders: string[];
 
 	async onload() {
 		await this.loadSettings();
+
+		this.loadFolders();
 
 		this.addSettingTab(new ANFSettingTab(this.app, this));
 
@@ -42,6 +49,47 @@ export default class AttachmentNameFormatting extends Plugin {
 			this.app.metadataCache.on("changed", (file) =>
 				this.handleAttachmentNameFormatting(file)
 			)
+		);
+
+		// Update all folder list when create new folder
+		this.registerEvent(
+			this.app.vault.on("create", (folderOrFile) => {
+				if (folderOrFile instanceof TFolder) {
+					if (!this.allFolders.includes(folderOrFile.path)) {
+						this.allFolders.push(folderOrFile.path);
+					}
+				}
+			})
+		);
+
+		// Update all folder list when rename exist folder
+		this.registerEvent(
+			this.app.vault.on("rename", (folderOrFile) => {
+				if (folderOrFile instanceof TFolder) {
+					const possibleOriginFolders = this.allFolders.filter(
+						(folder) => folder.includes(folderOrFile.name)
+					);
+					for (const folder of possibleOriginFolders) {
+						if (!this.app.vault.getAbstractFileByPath(folder)) {
+							this.allFolders.remove(folder);
+						}
+					}
+					if (!this.allFolders.includes(folderOrFile.path)) {
+						this.allFolders.push(folderOrFile.path);
+					}
+				}
+			})
+		);
+
+		// Update all folder list when delete folder
+		this.registerEvent(
+			this.app.vault.on("delete", (folderOrFile) => {
+				if (folderOrFile instanceof TFolder) {
+					if (this.allFolders.includes(folderOrFile.path)) {
+						this.allFolders.remove(folderOrFile.path);
+					}
+				}
+			})
 		);
 
 		this.addCommand({
@@ -66,6 +114,40 @@ export default class AttachmentNameFormatting extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: "scan-folder-command",
+			name: "Scan Files in the Folder",
+			callback: () => {
+				new FolderScanModal(this.app, this, (folder) => {
+					console.log(folder);
+					new FolderRenameWarningModal(this.app, async (result) => {
+						if (result) {
+							const fileList = this.app.vault
+								.getFiles()
+								.filter((file) => file.path.includes(folder));
+
+							const progress = this.addStatusBarItem();
+							for (const fileIndex in fileList) {
+								progress.empty();
+								progress.createEl("span", {
+									text: `Attachment renaming: ${
+										fileIndex + 1
+									}/${fileList.length}`,
+								});
+
+								this.handleAttachmentNameFormatting(
+									fileList[fileIndex],
+									true
+								);
+								await delay(1);
+							}
+							progress.empty();
+						}
+					}).open();
+				}).open();
+			},
+		});
+
 		// Copy the attachment's relative/absolute path
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor) =>
@@ -86,6 +168,17 @@ export default class AttachmentNameFormatting extends Plugin {
 		await this.saveData(this.settings);
 	}
 
+	loadFolders() {
+		this.allFolders = [];
+		for (const fileOrFolder in this.app.vault.adapter.files) {
+			if (this.app.vault.adapter.files[fileOrFolder].type === "folder") {
+				this.allFolders.push(
+					this.app.vault.adapter.files[fileOrFolder].realpath
+				);
+			}
+		}
+	}
+
 	/**
 	 * Rename the attachments in the active file when it has
 	 *
@@ -97,11 +190,11 @@ export default class AttachmentNameFormatting extends Plugin {
 		// timeInterval make sure the update not too frequent
 		if (
 			(this.app.workspace.getActiveFile() !== file && !multiple) ||
-			Date.now() - timeInterval < 2000
+			Date.now() - timeInterval.getTime() < 500
 		) {
 			return;
 		}
-		timeInterval = Date.now();
+		timeInterval = new Date();
 
 		console.log("Formatting attachments...");
 
@@ -110,6 +203,10 @@ export default class AttachmentNameFormatting extends Plugin {
 		// Check whether the file has attachments
 		console.log("Getting attachments list...");
 		if (attachments.hasOwnProperty("embeds")) {
+			console.log(file);
+			await this.handleLog(
+				`## ${file.path} [${timeInterval.toLocaleString()}]\n`
+			);
 			// Create a list of attachments, classified by types
 			const attachmentList: AttachmentList = {};
 			for (const item of attachments.embeds) {
@@ -128,11 +225,9 @@ export default class AttachmentNameFormatting extends Plugin {
 							attachmentList[fileType] = [];
 						}
 						// Find the attachment file
-						console.log(item.link);
 						const file_path = parseLinktext(
 							item.link.replace(/(\.\/)|(\.\.\/)+/g, "")
 						).path;
-						console.log(file_path);
 						let attachmentFile =
 							this.app.vault.getAbstractFileByPath(file_path);
 						if (!attachmentFile) {
@@ -142,7 +237,6 @@ export default class AttachmentNameFormatting extends Plugin {
 									file_path
 								);
 						}
-						console.log(attachmentFile);
 						// Avoid duplication
 						if (
 							!attachmentList[fileType].contains(attachmentFile)
@@ -194,6 +288,9 @@ export default class AttachmentNameFormatting extends Plugin {
 								);
 							const tmpName =
 								"tmp" + Date.now() + "_" + destinationFile.name;
+							await this.handleLog(
+								`Rename attachment ${destinationFile.name} to ${destinationFile_path} ${tmpName}\n`
+							);
 							console.log(
 								'Rename attachment "' +
 									destinationFile.name +
@@ -208,6 +305,9 @@ export default class AttachmentNameFormatting extends Plugin {
 							);
 						}
 
+						await this.handleLog(
+							`Rename attachment ${attachmentFile.name} to ${newName}\n`
+						);
 						console.log(
 							'Rename attachment "' +
 								attachmentFile.name +
@@ -479,5 +579,27 @@ export default class AttachmentNameFormatting extends Plugin {
 					});
 			});
 		}
+	}
+
+	async handleLog(log: string) {
+		if (!this.settings.usingLog) {
+			return;
+		}
+
+		const logName =
+			this.settings.logPath === "/"
+				? "/Attachment Name Formatting Log.md"
+				: this.settings.logPath + "/Attachment Name Formatting Log.md";
+
+				if (!this.app.vault.getAbstractFileByPath(logName)) {
+			await this.app.vault.create(
+				logName,
+				"# Attachment Name Formatting Log\n"
+			);
+		}
+
+		await this.app.vault.adapter.read(logName).then(async (value) => {
+			await this.app.vault.adapter.write(logName, value + log);
+		});
 	}
 }

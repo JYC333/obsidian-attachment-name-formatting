@@ -14,6 +14,8 @@ export const DEFAULT_SETTINGS: ANFSettings = {
 	exportUnusedDeletion: false,
 	copyPath: false,
 	copyPathMode: "Relative",
+	usingLog: false,
+	logPath: "/",
 };
 
 export const ATTACHMENT_TYPE = ["image", "audio", "video", "pdf"];

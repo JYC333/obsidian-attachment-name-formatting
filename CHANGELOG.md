@@ -1,9 +1,18 @@
+# [1.6.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.5.0...1.6.0) (2022-11-20)
+
+
+### Features
+
+* rename notes in folder command and log attahcment name changing ([c1840b9](https://github.com/JYC333/obsidian-file-structure-format/commit/c1840b99ae233cd046be7671418fa371d79084ee)), closes [#11](https://github.com/JYC333/obsidian-file-structure-format/issues/11)
+
+
+
 # [1.5.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.4.5...1.5.0) (2022-11-20)
 
 
 ### Features
 
-* feat: allow disable attachment renaming on different attachment type ([a9e4b19](https://github.com/JYC333/obsidian-file-structure-format/commit/a9e4b19d14a1df053103577fe042f89b245506da)), closes [#14](https://github.com/JYC333/obsidian-file-structure-format/issues/14)
+* feat: allow disable attachment renaming on different attachment type ([a9e4b19](https://github.com/JYC333/obsidian-file-structure-format/commit/a9e4b19d14a1df053103577fe042f89b245506da)), closes [#12](https://github.com/JYC333/obsidian-file-structure-format/issues/12)
 
 
 

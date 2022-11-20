@@ -12,4 +12,6 @@ export interface ANFSettings {
 	exportUnusedDeletion: boolean;
 	copyPath: boolean;
 	copyPathMode: string;
+	usingLog: boolean;
+	logPath: string;
 }

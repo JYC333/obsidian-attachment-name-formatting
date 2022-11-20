@@ -1,6 +1,7 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
-import { App, PluginSettingTab, Setting, Modal } from "obsidian";
+import { App, PluginSettingTab, Setting } from "obsidian";
 import AttachmentNameFormatting from "./main";
+import { DeletionWarningModal, FilenameWarningModal } from "./modals";
 import { ANFSettings } from "./types";
 import { DEFAULT_SETTINGS, ATTACHMENT_TYPE } from "./constants";
 
@@ -205,7 +206,7 @@ export class ANFSettingTab extends PluginSettingTab {
 		containerEl.createEl("h2", { text: "Right-Click Menu Setting" });
 
 		new Setting(containerEl)
-			.setName("Copy attachment link")
+			.setName("Copy Attachment Link")
 			.setDesc("Enable copy attachment link item in right-click menu.")
 			.addToggle((toggle) =>
 				toggle
@@ -213,22 +214,59 @@ export class ANFSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.copyPath = value;
 						await this.plugin.saveSettings();
+						this.display();
 					})
 			);
 
-		new Setting(containerEl)
-			.setName("Copy attachment link")
-			.setDesc(
-				"Autodeletion after exporting unused attachments in vault."
-			)
-			.addDropdown((dropDown) => {
-				dropDown.addOption("Relative", "Relative");
-				dropDown.addOption("Absolute", "Absolute");
-				dropDown.onChange(async (value) => {
-					this.plugin.settings.copyPathMode = value;
-					await this.plugin.saveSettings();
+		if (this.plugin.settings.copyPath) {
+			new Setting(containerEl)
+				.setName("Set Copy Link Type")
+				.setDesc("Choose to use relative path or absolute path.")
+				.addDropdown((dropDown) => {
+					dropDown.addOption("Relative", "Relative");
+					dropDown.addOption("Absolute", "Absolute");
+					dropDown.onChange(async (value) => {
+						this.plugin.settings.copyPathMode = value;
+						await this.plugin.saveSettings();
+					});
 				});
-			});
+		}
+
+		containerEl.createEl("h2", { text: "Log Setting" });
+
+		new Setting(containerEl)
+			.setName("Logging Attahment Name Changes")
+			.setDesc("Logging the attachmnet name changes into file.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.usingLog)
+					.onChange(async (value) => {
+						this.plugin.settings.usingLog = value;
+						await this.plugin.saveSettings();
+						this.display();
+					})
+			);
+
+		if (this.plugin.settings.usingLog) {
+			new Setting(containerEl)
+				.setName("Log File Path")
+				.setDesc(
+					"Set where the log file saved. Note: change path will not move the old log."
+				)
+				.addDropdown((drop) => {
+					drop.setValue(this.plugin.settings.logPath)
+						.addOptions(
+							this.plugin.allFolders.reduce(
+								(a, v) => ({ ...a, [v]: v }),
+								{}
+							)
+						)
+						.onChange(async (value) => {
+							this.plugin.settings.logPath = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		}
 	}
 
 	typeAvaliablility(available: boolean, attachmentType: Setting) {
@@ -255,41 +293,5 @@ export class ANFSettingTab extends PluginSettingTab {
 		} else {
 			attachmentType.components.pop();
 		}
-	}
-}
-
-class DeletionWarningModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		const { contentEl } = this;
-		contentEl.setText(
-			"Will delete the attachments and content after export!"
-		);
-	}
-
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-}
-
-class FilenameWarningModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		const { contentEl } = this;
-		contentEl.setText(
-			'Invalid/No connector for filename, will use "_" as connector!'
-		);
-	}
-
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
 	}
 }
