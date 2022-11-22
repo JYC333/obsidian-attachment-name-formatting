@@ -1,3 +1,12 @@
+## [1.6.3](https://github.com/JYC333/obsidian-file-structure-format/compare/1.6.2...1.6.3) (2022-11-22)
+
+
+### Bug Fixes
+
+* update the renaming strategy ([91dd2ec](https://github.com/JYC333/obsidian-file-structure-format/commit/91dd2ece7294f7c38d81f822e9b59e2a3bf4be77)), closes [#14](https://github.com/JYC333/obsidian-file-structure-format/issues/14)
+
+
+
 ## [1.6.2](https://github.com/JYC333/obsidian-file-structure-format/compare/1.6.1...1.6.2) (2022-11-22)
 
 

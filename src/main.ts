@@ -32,11 +32,11 @@ const extensions = {
 	pdf: ["pdf"],
 };
 
-const delay = (n: number) => new Promise((r) => setTimeout(r, n * 1000));
 
 export default class AttachmentNameFormatting extends Plugin {
 	settings: ANFSettings;
 	allFolders: string[];
+	renaming: boolean;
 
 	async onload() {
 		await this.loadSettings();
@@ -152,11 +152,10 @@ export default class AttachmentNameFormatting extends Plugin {
 									}/${fileList.length}`,
 								});
 
-								this.handleAttachmentNameFormatting(
+								await this.handleAttachmentNameFormatting(
 									fileList[fileIndex],
 									true
 								);
-								await delay(1);
 							}
 							progress.empty();
 						}
@@ -208,10 +207,11 @@ export default class AttachmentNameFormatting extends Plugin {
 		// timeInterval make sure the update not too frequent
 		if (
 			(this.app.workspace.getActiveFile() !== file && !check) ||
-			Date.now() - timeInterval.getTime() < 500
+			this.renaming
 		) {
 			return;
 		}
+		this.renaming = true;
 		timeInterval = new Date();
 
 		console.log("Formatting attachments...");
@@ -221,7 +221,6 @@ export default class AttachmentNameFormatting extends Plugin {
 		// Check whether the file has attachments
 		console.log("Getting attachments list...");
 		if (attachments.hasOwnProperty("embeds")) {
-			console.log(file);
 			await this.handleLog(
 				`## ${file.path} [${timeInterval.toLocaleString()}]\n`
 			);
@@ -334,6 +333,7 @@ export default class AttachmentNameFormatting extends Plugin {
 		} else {
 			console.log("No attachments found...");
 		}
+		this.renaming = false;
 	}
 
 	/*
@@ -577,6 +577,30 @@ export default class AttachmentNameFormatting extends Plugin {
 	}
 
 	/**
+	 * Get attachment file
+	 *
+	 * @param	{EmbedCache}			item	The attachment item
+	 * @return	{TAbstractFile|TFile}			The attachment TAbstractFile object
+	 */
+	getAttachment(item: EmbedCache): TAbstractFile | TFile {
+		const file_path = parseLinktext(
+			item.link.replace(/(\.\/)|(\.\.\/)+/g, "")
+		).path;
+
+		let attachmentFile = this.app.vault.getAbstractFileByPath(
+			parseLinktext(item.link.replace(/(\.\/)|(\.\.\/)+/g, "")).path
+		);
+		if (!attachmentFile) {
+			attachmentFile = this.app.metadataCache.getFirstLinkpathDest(
+				file_path,
+				file_path
+			);
+		}
+
+		return attachmentFile;
+	}
+
+	/**
 	 * Logging message into file
 	 *
 	 * @param	{string}	message		The log message
@@ -601,29 +625,5 @@ export default class AttachmentNameFormatting extends Plugin {
 		await this.app.vault.adapter.read(logName).then(async (value) => {
 			await this.app.vault.adapter.write(logName, value + message);
 		});
-	}
-
-	/**
-	 * Logging message into file
-	 *
-	 * @param	{EmbedCache}	item	The attachment item
-	 * @return	{TAbstractFile|TFile}			The attachment TAbstractFile object
-	 */
-	getAttachment(item: EmbedCache): TAbstractFile | TFile {
-		const file_path = parseLinktext(
-			item.link.replace(/(\.\/)|(\.\.\/)+/g, "")
-		).path;
-
-		let attachmentFile = this.app.vault.getAbstractFileByPath(
-			parseLinktext(item.link.replace(/(\.\/)|(\.\.\/)+/g, "")).path
-		);
-		if (!attachmentFile) {
-			attachmentFile = this.app.metadataCache.getFirstLinkpathDest(
-				file_path,
-				file_path
-			);
-		}
-
-		return attachmentFile;
 	}
 }
