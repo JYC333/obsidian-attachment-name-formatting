@@ -67,9 +67,10 @@ export class ANFSettingTab extends PluginSettingTab {
 					)
 					.onChange(async (value) => {
 						const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
-						if (fileNamepatn.test(value) || value === "") {
+						if (fileNamepatn.test(value)) {
 							new FilenameWarningModal(this.app).open();
 							value = "_";
+							this.display();
 						}
 						this.plugin.settings.connector =
 							value === "" ? DEFAULT_SETTINGS.connector : value;
@@ -98,6 +99,12 @@ export class ANFSettingTab extends PluginSettingTab {
 								  ] as string)
 						)
 						.onChange(async (value) => {
+							const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
+							if (fileNamepatn.test(value)) {
+								new FilenameWarningModal(this.app).open();
+								value = value.replace(fileNamepatn, "");
+								this.display();
+							}
 							this.plugin.settings[attachmentType] = (
 								value === ""
 									? DEFAULT_SETTINGS[attachmentType]

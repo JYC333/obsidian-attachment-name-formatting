@@ -27,7 +27,7 @@ export class FilenameWarningModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.createEl("h1", {
-			text: 'Invalid/No connector for filename, will use "_" as connector!',
+			text: 'Invalid character for filename, will remove the character!',
 		});
 	}
 

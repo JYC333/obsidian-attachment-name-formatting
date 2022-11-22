@@ -1,13 +1,13 @@
 {
 	"name": "obsidian-attachment-name-formattion",
-	"version": "1.6.1",
+	"version": "1.6.2",
 	"description": "Obsidian plugin for formatting attachments name (filename attachmentType indexNumber.xxx)",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node scripts/esbuild.config.mjs",
 		"build": "node scripts/esbuild.config.mjs production",
 		"changelog": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md && git commit --amend --no-edit",
-		"version": "node scripts/version-bump.mjs %npm_config_new% && git add manifest.json versions.json package.json && git commit --amend --no-edit && git tag %npm_config_new%"
+		"version": "node scripts/version-bump.mjs %npm_config_new% && git add manifest.json versions.json package.json && git commit --amend --no-edit"
 	},
 	"keywords": [],
 	"author": "",

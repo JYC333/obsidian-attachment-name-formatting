@@ -1,3 +1,12 @@
+## [1.6.2](https://github.com/JYC333/obsidian-file-structure-format/compare/1.6.1...1.6.2) (2022-11-22)
+
+
+### Bug Fixes
+
+* fix setting and update the README ([ba251ac](https://github.com/JYC333/obsidian-file-structure-format/commit/ba251acfe33582831d329264d26336920855d999)), closes [#10](https://github.com/JYC333/obsidian-file-structure-format/issues/10)
+
+
+
 ## [1.6.1](https://github.com/JYC333/obsidian-file-structure-format/compare/1.6.0...1.6.1) (2022-11-22)
 
 
