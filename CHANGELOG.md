@@ -1,3 +1,12 @@
+## [1.6.1](https://github.com/JYC333/obsidian-file-structure-format/compare/1.6.0...1.6.1) (2022-11-22)
+
+
+### Bug Fixes
+
+* fix the export function and ribbon setting ([a313441](https://github.com/JYC333/obsidian-file-structure-format/commit/a313441f961f40c0998735acecc0a20da5b73ff2))
+
+
+
 # [1.6.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.5.0...1.6.0) (2022-11-20)
 
 

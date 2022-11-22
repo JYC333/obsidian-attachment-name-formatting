@@ -9,10 +9,11 @@ import {
 	Menu,
 	Editor,
 	TFolder,
+	EmbedCache,
 } from "obsidian";
 import { ANFSettings } from "./types";
 import { DEFAULT_SETTINGS } from "./constants";
-import { ANFSettingTab } from "./settings";
+import { ANFSettingTab, ribbons } from "./settings";
 import { FolderScanModal, FolderRenameWarningModal } from "./modals";
 
 const fs = require("fs");
@@ -98,11 +99,27 @@ export default class AttachmentNameFormatting extends Plugin {
 			callback: () => this.handleAttachmentExport(),
 		});
 
+		if (this.settings.exportCurrentRiboon) {
+			ribbons.exportCurrentFile = this.addRibbonIcon(
+				"sheets-in-box",
+				"Export Attachments",
+				() => this.handleAttachmentExport()
+			);
+		}
+
 		this.addCommand({
 			id: "export-unused-attachments-command",
 			name: "Export All Unused Attachments in the Vault",
 			callback: () => this.handleUnusedAttachmentExport(),
 		});
+
+		if (this.settings.exportUnusedRiboon) {
+			ribbons.exportUnusesdFile = this.addRibbonIcon(
+				"documents",
+				"Export Unused Attachments",
+				() => this.handleUnusedAttachmentExport()
+			);
+		}
 
 		// Resacn the attachments command
 		this.addCommand({
@@ -182,14 +199,15 @@ export default class AttachmentNameFormatting extends Plugin {
 	/**
 	 * Rename the attachments in the active file when it has
 	 *
-	 * @param	{TFile}	file	The active file
+	 * @param	{TFile}		file	The active file
+	 * @param	{boolean}	check	Whether checking its active file
 	 */
-	async handleAttachmentNameFormatting(file: TFile, multiple = false) {
+	async handleAttachmentNameFormatting(file: TFile, check = false) {
 		// If currently opened file is not the same as the one that trigger the event,
 		// skip this is to make sure other events don't trigger this plugin
 		// timeInterval make sure the update not too frequent
 		if (
-			(this.app.workspace.getActiveFile() !== file && !multiple) ||
+			(this.app.workspace.getActiveFile() !== file && !check) ||
 			Date.now() - timeInterval.getTime() < 500
 		) {
 			return;
@@ -225,18 +243,7 @@ export default class AttachmentNameFormatting extends Plugin {
 							attachmentList[fileType] = [];
 						}
 						// Find the attachment file
-						const file_path = parseLinktext(
-							item.link.replace(/(\.\/)|(\.\.\/)+/g, "")
-						).path;
-						let attachmentFile =
-							this.app.vault.getAbstractFileByPath(file_path);
-						if (!attachmentFile) {
-							attachmentFile =
-								this.app.metadataCache.getFirstLinkpathDest(
-									file_path,
-									file_path
-								);
-						}
+						const attachmentFile = this.getAttachment(item);
 						// Avoid duplication
 						if (
 							!attachmentList[fileType].contains(attachmentFile)
@@ -350,10 +357,12 @@ export default class AttachmentNameFormatting extends Plugin {
 					const attachmentExtension = item.link.split(".").pop();
 					console.log("Collecting attachments...");
 					if (fileExtensions.contains(attachmentExtension)) {
+						const attachement = this.getAttachment(item);
+
 						const file_path = normalizePath(
 							this.app.vault.adapter.basePath +
 								"\\" +
-								parseLinktext(item.link).path
+								attachement.path
 						);
 						console.log("Get attachment", file_path);
 						// Get the attachment and write into JSZip instance
@@ -395,16 +404,7 @@ export default class AttachmentNameFormatting extends Plugin {
 			if (this.settings.exportCurrentDeletion) {
 				console.log("Deleting attachments...");
 				for (const item of attachments.embeds) {
-					const file_path = parseLinktext(item.link).path;
-					let attachmentFile =
-						this.app.vault.getAbstractFileByPath(file_path);
-					if (!attachmentFile) {
-						attachmentFile =
-							this.app.metadataCache.getFirstLinkpathDest(
-								file_path,
-								file_path
-							);
-					}
+					const attachmentFile = this.getAttachment(item);
 					content = content.replace(item.original, "");
 					console.log("Delete attachment", attachmentFile.name);
 					await this.app.vault.delete(attachmentFile);
@@ -439,12 +439,7 @@ export default class AttachmentNameFormatting extends Plugin {
 			const attachments = this.app.metadataCache.getFileCache(mdfile);
 			if (attachments.hasOwnProperty("embeds")) {
 				for (const item of attachments.embeds) {
-					const file_path = parseLinktext(item.link).path;
-					const attachmentFile =
-						this.app.metadataCache.getFirstLinkpathDest(
-							file_path,
-							file_path
-						);
+					const attachmentFile = this.getAttachment(item) as TFile;
 					if (attachmentFiles.contains(attachmentFile)) {
 						attachmentFiles.remove(attachmentFile);
 					}
@@ -581,7 +576,12 @@ export default class AttachmentNameFormatting extends Plugin {
 		}
 	}
 
-	async handleLog(log: string) {
+	/**
+	 * Logging message into file
+	 *
+	 * @param	{string}	message		The log message
+	 */
+	async handleLog(message: string) {
 		if (!this.settings.usingLog) {
 			return;
 		}
@@ -591,7 +591,7 @@ export default class AttachmentNameFormatting extends Plugin {
 				? "/Attachment Name Formatting Log.md"
 				: this.settings.logPath + "/Attachment Name Formatting Log.md";
 
-				if (!this.app.vault.getAbstractFileByPath(logName)) {
+		if (!this.app.vault.getAbstractFileByPath(logName)) {
 			await this.app.vault.create(
 				logName,
 				"# Attachment Name Formatting Log\n"
@@ -599,7 +599,31 @@ export default class AttachmentNameFormatting extends Plugin {
 		}
 
 		await this.app.vault.adapter.read(logName).then(async (value) => {
-			await this.app.vault.adapter.write(logName, value + log);
+			await this.app.vault.adapter.write(logName, value + message);
 		});
+	}
+
+	/**
+	 * Logging message into file
+	 *
+	 * @param	{EmbedCache}	item	The attachment item
+	 * @return	{TAbstractFile|TFile}			The attachment TAbstractFile object
+	 */
+	getAttachment(item: EmbedCache): TAbstractFile | TFile {
+		const file_path = parseLinktext(
+			item.link.replace(/(\.\/)|(\.\.\/)+/g, "")
+		).path;
+
+		let attachmentFile = this.app.vault.getAbstractFileByPath(
+			parseLinktext(item.link.replace(/(\.\/)|(\.\.\/)+/g, "")).path
+		);
+		if (!attachmentFile) {
+			attachmentFile = this.app.metadataCache.getFirstLinkpathDest(
+				file_path,
+				file_path
+			);
+		}
+
+		return attachmentFile;
 	}
 }

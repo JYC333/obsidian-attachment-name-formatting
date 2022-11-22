@@ -8,6 +8,8 @@ export interface ANFSettings {
 	enablePdf: boolean;
 	pdf: string;
 	connector: string;
+	exportCurrentRiboon:boolean;
+	exportUnusedRiboon:boolean;
 	exportCurrentDeletion: boolean;
 	exportUnusedDeletion: boolean;
 	copyPath: boolean;

@@ -10,7 +10,7 @@ interface RibbonList {
 	exportUnusesdFile: HTMLElement;
 }
 
-const ribbons: RibbonList = {
+export const ribbons: RibbonList = {
 	exportCurrentFile: null,
 	exportUnusesdFile: null,
 };
@@ -113,6 +113,7 @@ export class ANFSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings[attachmentEnable] = value as never;
 						this.typeAvaliablility(value, typeSetting);
+						await this.plugin.saveSettings();
 						this.display();
 					});
 			});
@@ -127,8 +128,9 @@ export class ANFSettingTab extends PluginSettingTab {
 			)
 			.addToggle((toggle) =>
 				toggle
-					.setValue(ribbons.exportCurrentFile !== null)
+					.setValue(this.plugin.settings.exportCurrentRiboon)
 					.onChange(async (value) => {
+						this.plugin.settings.exportCurrentRiboon = value;
 						if (value) {
 							ribbons.exportCurrentFile =
 								this.plugin.addRibbonIcon(
@@ -142,6 +144,7 @@ export class ANFSettingTab extends PluginSettingTab {
 							);
 							ribbons.exportCurrentFile = null;
 						}
+						await this.plugin.saveSettings();
 					})
 			);
 
@@ -152,8 +155,9 @@ export class ANFSettingTab extends PluginSettingTab {
 			)
 			.addToggle((toggle) =>
 				toggle
-					.setValue(ribbons.exportUnusesdFile !== null)
+					.setValue(this.plugin.settings.exportUnusedRiboon)
 					.onChange(async (value) => {
+						this.plugin.settings.exportUnusedRiboon = value;
 						if (value) {
 							ribbons.exportUnusesdFile =
 								this.plugin.addRibbonIcon(
@@ -168,6 +172,7 @@ export class ANFSettingTab extends PluginSettingTab {
 							);
 							ribbons.exportUnusesdFile = null;
 						}
+						await this.plugin.saveSettings();
 					})
 			);
 

@@ -10,6 +10,8 @@ export const DEFAULT_SETTINGS: ANFSettings = {
 	enablePdf: true,
 	pdf: "pdf",
 	connector: "_",
+	exportCurrentRiboon: false,
+	exportUnusedRiboon: false,
 	exportCurrentDeletion: false,
 	exportUnusedDeletion: false,
 	copyPath: false,
