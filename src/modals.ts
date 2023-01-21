@@ -1,5 +1,54 @@
 import { App, Modal, FuzzySuggestModal, Setting } from "obsidian";
 import AttachmentNameFormatting from "./main";
+import { extensions } from "./constants";
+
+export class AttachmentExtensionModad extends Modal {
+	attachmentType: string;
+	plugin: AttachmentNameFormatting;
+
+	constructor(
+		app: App,
+		attachmentType: string,
+		plugin: AttachmentNameFormatting
+	) {
+		super(app);
+		this.attachmentType = attachmentType;
+		this.plugin = plugin;
+	}
+
+	onOpen() {
+		const { contentEl } = this;
+		contentEl.createEl("h2", {
+			text: `Enable/Disable the ${this.attachmentType} extenstions.`,
+		});
+
+		for (const indStr in extensions[this.attachmentType]) {
+			const ind = parseInt(indStr);
+			const extensionSettingName = this.attachmentType + "Extensions";
+			console.log(extensionSettingName);
+			new Setting(contentEl)
+				.setName(extensions[this.attachmentType][ind])
+				.addToggle((toggle) => {
+					toggle
+						.setValue(
+							// @ts-ignore
+							this.plugin.settings[extensionSettingName][ind]
+						)
+						.onChange(async (value) => {
+							// @ts-ignore
+							this.plugin.settings[extensionSettingName][ind] =
+								value;
+							await this.plugin.saveSettings();
+						});
+				});
+		}
+	}
+
+	onClose() {
+		const { contentEl } = this;
+		contentEl.empty();
+	}
+}
 
 export class DeletionWarningModal extends Modal {
 	constructor(app: App) {
@@ -27,7 +76,7 @@ export class FilenameWarningModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.createEl("h1", {
-			text: 'Invalid character for filename, will remove the character!',
+			text: "Invalid character for filename, will remove the character!",
 		});
 	}
 

@@ -1,13 +1,24 @@
-import { ANFSettings } from "./types";
+import { ANFSettings, ExtensionList } from "./types";
+
+export const extensions: ExtensionList = {
+	image: ["png", "jpg", "jpeg", "gif", "bmp", "svg"],
+	audio: ["mp3", "wav", "m4a", "ogg", "3gp", "flac"], // "webm"
+	video: ["mp4", "ogv", "mov", "mkv"], // "webm"
+	pdf: ["pdf"],
+};
 
 export const DEFAULT_SETTINGS: ANFSettings = {
 	enableImage: true,
+	imageExtensions: [true, true, true, true, true, true], // same amout with image extensions
 	image: "image",
 	enableAudio: true,
+	audioExtensions: [true, true, true, true, true, true], // same amout with audio extensions
 	audio: "audio",
 	enableVideo: true,
+	videoExtensions: [true, true, true, true], // same amout with video extensions
 	video: "video",
 	enablePdf: true,
+	pdfExtensions: [true], // same amout with pdf extensions
 	pdf: "pdf",
 	connector: "_",
 	exportCurrentRiboon: false,

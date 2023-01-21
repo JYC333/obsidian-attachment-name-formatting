@@ -12,7 +12,7 @@ import {
 	EmbedCache,
 } from "obsidian";
 import { ANFSettings } from "./types";
-import { DEFAULT_SETTINGS } from "./constants";
+import { DEFAULT_SETTINGS, extensions } from "./constants";
 import { ANFSettingTab, ribbons } from "./settings";
 import { FolderScanModal, FolderRenameWarningModal } from "./modals";
 
@@ -24,14 +24,6 @@ let timeInterval = new Date();
 interface AttachmentList {
 	[key: string]: Array<TAbstractFile>;
 }
-
-const extensions = {
-	image: ["png", "jpg", "jpeg", "gif", "bmp", "svg"],
-	audio: ["mp3", "wav", "m4a", "ogg", "3gp", "flac"], // "webm"
-	video: ["mp4", "ogv", "mov", "mkv"], // "webm"
-	pdf: ["pdf"],
-};
-
 
 export default class AttachmentNameFormatting extends Plugin {
 	settings: ANFSettings;
@@ -233,10 +225,16 @@ export default class AttachmentNameFormatting extends Plugin {
 					const attachmentEnable = ("enable" +
 						fileType.slice(0, 1).toUpperCase() +
 						fileType.slice(1)) as keyof ANFSettings;
+					const extensionEnable = (fileType +
+						"Extensions") as keyof ANFSettings;
 					const attachmentExtension = item.link.split(".").pop();
+					const attachmentExtensionInd =
+						extensions[fileType].indexOf(attachmentExtension);
 					if (
 						fileExtensions.contains(attachmentExtension) &&
-						this.settings[attachmentEnable]
+						this.settings[attachmentEnable] &&
+						// @ts-ignore
+						this.settings[extensionEnable][attachmentExtensionInd]
 					) {
 						if (!attachmentList.hasOwnProperty(fileType)) {
 							attachmentList[fileType] = [];

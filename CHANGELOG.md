@@ -1,3 +1,12 @@
+# [1.7.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.6.4...1.7.0) (2023-01-21)
+
+
+### Features
+
+* add setting that config which extension can be ignored ([06f7b00](https://github.com/JYC333/obsidian-file-structure-format/commit/06f7b008443a2c9ad229f07e10d80b692592ac05)), closes [#16](https://github.com/JYC333/obsidian-file-structure-format/issues/16)
+
+
+
 ## [1.6.4](https://github.com/JYC333/obsidian-file-structure-format/compare/1.6.3...1.6.4) (2022-11-23)
 
 

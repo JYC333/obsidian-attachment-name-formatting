@@ -1,7 +1,11 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 import { App, PluginSettingTab, Setting } from "obsidian";
 import AttachmentNameFormatting from "./main";
-import { DeletionWarningModal, FilenameWarningModal } from "./modals";
+import {
+	AttachmentExtensionModad,
+	DeletionWarningModal,
+	FilenameWarningModal,
+} from "./modals";
 import { ANFSettings } from "./types";
 import { DEFAULT_SETTINGS, ATTACHMENT_TYPE } from "./constants";
 
@@ -113,6 +117,16 @@ export class ANFSettingTab extends PluginSettingTab {
 							await this.plugin.saveSettings();
 						})
 				);
+
+				typeSetting.addExtraButton((extraButton) => {
+					extraButton.onClick(() => {
+						new AttachmentExtensionModad(
+							app,
+							attachmentType,
+							this.plugin
+						).open();
+					});
+				});
 			}
 			typeSetting.addToggle((toggle) => {
 				toggle
