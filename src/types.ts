@@ -3,6 +3,7 @@
 // }
 
 export interface ANFSettings {
+	enableAuto: boolean;
 	enableImage: boolean;
 	imageExtensions: boolean[];
 	image: string;

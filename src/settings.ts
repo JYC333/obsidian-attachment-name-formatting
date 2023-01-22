@@ -57,6 +57,20 @@ export class ANFSettingTab extends PluginSettingTab {
 		containerEl.createEl("h2", { text: "Attachments Format Setting" });
 
 		new Setting(containerEl)
+			.setName("Automic formatting")
+			.setDesc(
+				"Automic formatting the attachments' name when changing note content"
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.enableAuto)
+					.onChange(async (value) => {
+						this.plugin.settings.enableAuto = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("Format for connector")
 			.setDesc(
 				"Set the format for connector between file name and attachment name."

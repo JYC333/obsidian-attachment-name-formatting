@@ -39,9 +39,11 @@ export default class AttachmentNameFormatting extends Plugin {
 
 		// Format the attachments' name
 		this.registerEvent(
-			this.app.metadataCache.on("changed", (file) =>
-				this.handleAttachmentNameFormatting(file)
-			)
+			this.app.metadataCache.on("changed", (file) => {
+				if (this.settings.enableAuto) {
+					this.handleAttachmentNameFormatting(file);
+				}
+			})
 		);
 
 		// Update all folder list when create new folder

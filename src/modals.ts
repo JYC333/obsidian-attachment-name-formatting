@@ -25,7 +25,6 @@ export class AttachmentExtensionModad extends Modal {
 		for (const indStr in extensions[this.attachmentType]) {
 			const ind = parseInt(indStr);
 			const extensionSettingName = this.attachmentType + "Extensions";
-			console.log(extensionSettingName);
 			new Setting(contentEl)
 				.setName(extensions[this.attachmentType][ind])
 				.addToggle((toggle) => {

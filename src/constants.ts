@@ -8,6 +8,7 @@ export const extensions: ExtensionList = {
 };
 
 export const DEFAULT_SETTINGS: ANFSettings = {
+	enableAuto: true,
 	enableImage: true,
 	imageExtensions: [true, true, true, true, true, true], // same amout with image extensions
 	image: "image",

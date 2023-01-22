@@ -1,3 +1,12 @@
+# [1.8.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.6.4...1.8.0) (2023-01-22)
+
+
+### Features
+
+* add setting for disable automic reformatting ([ad7180a](https://github.com/JYC333/obsidian-file-structure-format/commit/ad7180a11ba396487eb94512e0d9d76b45302898)), closes [#17](https://github.com/JYC333/obsidian-file-structure-format/issues/17)
+
+
+
 # [1.7.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.6.4...1.7.0) (2023-01-21)
 
 
