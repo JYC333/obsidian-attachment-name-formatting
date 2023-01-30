@@ -1,3 +1,12 @@
+## [1.9.1](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.0...1.9.1) (2023-01-30)
+
+
+### Bug Fixes
+
+* fix the excluding folder setting that didn't catch the folder under vault root ([96a2cb5](https://github.com/JYC333/obsidian-file-structure-format/commit/96a2cb558caaeb3172db5d79e958ee335482f5b9))
+
+
+
 # [1.9.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.8.0...1.9.0) (2023-01-30)
 
 

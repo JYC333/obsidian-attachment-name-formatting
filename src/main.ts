@@ -46,7 +46,7 @@ export default class AttachmentNameFormatting extends Plugin {
 					while (parentFolder.path !== "/") {
 						if (
 							!this.settings.excludedFolders.includes(
-								parentFolder.parent.path
+								parentFolder.path
 							)
 						) {
 							parentFolder = parentFolder.parent;
@@ -387,6 +387,7 @@ export default class AttachmentNameFormatting extends Plugin {
 						const attachement = this.getAttachment(item);
 
 						const file_path = normalizePath(
+							// @ts-ignore
 							this.app.vault.adapter.basePath +
 								"\\" +
 								attachement.path
@@ -410,6 +411,7 @@ export default class AttachmentNameFormatting extends Plugin {
 				.pipe(
 					fs.createWriteStream(
 						normalizePath(
+							// @ts-ignore
 							this.app.vault.adapter.basePath +
 								"/" +
 								file.basename +
@@ -478,6 +480,7 @@ export default class AttachmentNameFormatting extends Plugin {
 		const zip = new JSZip();
 		for (const file of attachmentFiles) {
 			const file_path = normalizePath(
+				// @ts-ignore
 				this.app.vault.adapter.basePath +
 					"\\" +
 					parseLinktext(file.path).path
@@ -493,6 +496,7 @@ export default class AttachmentNameFormatting extends Plugin {
 			.pipe(
 				fs.createWriteStream(
 					normalizePath(
+						// @ts-ignore
 						this.app.vault.adapter.basePath +
 							"/Unused_Attachments.zip"
 					)
