@@ -2,6 +2,84 @@ import { App, Modal, FuzzySuggestModal, Setting } from "obsidian";
 import AttachmentNameFormatting from "./main";
 import { extensions } from "./constants";
 
+export class ExcludedFoldersModad extends Modal {
+	plugin: AttachmentNameFormatting;
+	noneExcludedFolders: Record<string, string> = {};
+
+	constructor(app: App, plugin: AttachmentNameFormatting) {
+		super(app);
+		this.plugin = plugin;
+		this.reloadFolders();
+	}
+
+	reloadFolders() {
+		this.noneExcludedFolders = {};
+		this.plugin.allFolders.map((d) => {
+			if (!this.plugin.settings.excludedFolders.includes(d)) {
+				this.noneExcludedFolders[d] = d;
+			}
+		});
+		delete this.noneExcludedFolders["/"];
+	}
+
+	onOpen() {
+		const { contentEl } = this;
+		contentEl.createEl("h2", {
+			text: `Excluded Folders`,
+		});
+
+		for (const folder of this.plugin.settings.excludedFolders) {
+			let oldValue = folder;
+			new Setting(contentEl)
+				.addDropdown((drop) => {
+					drop.setValue(folder)
+						.addOption(folder, folder)
+						.addOptions(this.noneExcludedFolders)
+						.onChange((value) => {
+							const ind =
+								this.plugin.settings.excludedFolders.indexOf(
+									oldValue
+								);
+							this.noneExcludedFolders[oldValue] = oldValue;
+							this.plugin.settings.excludedFolders[ind] = value;
+							delete this.noneExcludedFolders[value];
+							oldValue = value;
+							this.plugin.saveSettings();
+							this.reloadFolders();
+							this.close();
+							this.open();
+						});
+				})
+				.addExtraButton((extraButton) => {
+					extraButton.setIcon("x-circle").onClick(() => {
+						this.plugin.settings.excludedFolders.remove(folder);
+						this.noneExcludedFolders[folder] = folder;
+						this.plugin.saveSettings();
+						this.reloadFolders();
+						this.close();
+						this.open();
+					});
+				});
+		}
+
+		new Setting(contentEl).addButton((button) => {
+			button.setButtonText("Add").onClick(() => {
+				this.plugin.settings.excludedFolders.push(
+					"Select excluded folder"
+				);
+				this.plugin.saveSettings();
+				this.close();
+				this.open();
+			});
+		});
+	}
+
+	onClose() {
+		const { contentEl } = this;
+		contentEl.empty();
+	}
+}
+
 export class AttachmentExtensionModad extends Modal {
 	attachmentType: string;
 	plugin: AttachmentNameFormatting;

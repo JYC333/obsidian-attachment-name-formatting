@@ -1,3 +1,12 @@
+# [1.9.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.8.0...1.9.0) (2023-01-30)
+
+
+### Features
+
+* exclude auto format folder ([7f7e014](https://github.com/JYC333/obsidian-file-structure-format/commit/7f7e0144abd8335cfb00113b59bf4b6fcaf650d6))
+
+
+
 # [1.8.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.6.4...1.8.0) (2023-01-22)
 
 

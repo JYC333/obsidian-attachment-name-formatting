@@ -41,11 +41,29 @@ export default class AttachmentNameFormatting extends Plugin {
 		this.registerEvent(
 			this.app.metadataCache.on("changed", (file) => {
 				if (this.settings.enableAuto) {
-					this.handleAttachmentNameFormatting(file);
+					let parentFolder = file.parent;
+					let excluded = false;
+					while (parentFolder.path !== "/") {
+						if (
+							!this.settings.excludedFolders.includes(
+								parentFolder.parent.path
+							)
+						) {
+							parentFolder = parentFolder.parent;
+						} else {
+							excluded = true;
+							break;
+						}
+					}
+
+					if (!excluded) {
+						this.handleAttachmentNameFormatting(file);
+					}
 				}
 			})
 		);
 
+		// ---------- Functions for rename files within one folder ----------
 		// Update all folder list when create new folder
 		this.registerEvent(
 			this.app.vault.on("create", (folderOrFile) => {
@@ -87,6 +105,7 @@ export default class AttachmentNameFormatting extends Plugin {
 			})
 		);
 
+		// ---------- Commands and ribbons ----------
 		this.addCommand({
 			id: "export-attachments-command",
 			name: "Export Attachments in Current File",
@@ -229,7 +248,15 @@ export default class AttachmentNameFormatting extends Plugin {
 						fileType.slice(1)) as keyof ANFSettings;
 					const extensionEnable = (fileType +
 						"Extensions") as keyof ANFSettings;
-					const attachmentExtension = item.link.split(".").pop();
+					// Check whether the attachment is already renamed by this plugin
+					if (
+						item.link
+							.split(this.settings.connector)
+							.slice(-2, -1)[0] === fileType
+					) {
+						const attachmentName = item.link.split(".")[0];
+					}
+					const attachmentExtension = item.link.split(".")[1];
 					const attachmentExtensionInd =
 						extensions[fileType].indexOf(attachmentExtension);
 					if (

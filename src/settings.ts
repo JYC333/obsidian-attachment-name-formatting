@@ -2,6 +2,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import AttachmentNameFormatting from "./main";
 import {
+	ExcludedFoldersModad,
 	AttachmentExtensionModad,
 	DeletionWarningModal,
 	FilenameWarningModal,
@@ -68,6 +69,17 @@ export class ANFSettingTab extends PluginSettingTab {
 						this.plugin.settings.enableAuto = value;
 						await this.plugin.saveSettings();
 					});
+			});
+
+		new Setting(containerEl)
+			.setName("Excluded folders")
+			.setDesc(
+				"The notes under these folders will not reformat auto format the attachment name"
+			)
+			.addExtraButton((extraButton) => {
+				extraButton.onClick(() => {
+					new ExcludedFoldersModad(app, this.plugin).open();
+				});
 			});
 
 		new Setting(containerEl)
