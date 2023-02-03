@@ -1,3 +1,12 @@
+## [1.9.2](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.1...1.9.2) (2023-02-03)
+
+
+### Bug Fixes
+
+* fix the bug that cannot format the attachment name when filename has "." character ([21cd534](https://github.com/JYC333/obsidian-file-structure-format/commit/21cd53495f2f834327e1d68e67faeff24c48e3e3))
+
+
+
 ## [1.9.1](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.0...1.9.1) (2023-01-30)
 
 

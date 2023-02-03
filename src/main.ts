@@ -256,7 +256,7 @@ export default class AttachmentNameFormatting extends Plugin {
 					) {
 						const attachmentName = item.link.split(".")[0];
 					}
-					const attachmentExtension = item.link.split(".")[1];
+					const attachmentExtension = item.link.split(".").pop();
 					const attachmentExtensionInd =
 						extensions[fileType].indexOf(attachmentExtension);
 					if (
