@@ -20,11 +20,11 @@ The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending n
 
 
 ### Supported attachment format
-1. Image files: png, jpg, jpeg, gif, bmp, svg
+1. Image files: png, webp, jpg, jpeg, gif, bmp, svg
 2. Audio files: mp3, wav, m4a, ogg, 3gp, flac
-3. Video files: mp4, ogv, mov, mkv
+3. Video files: mp4, webp, ogv, mov, mkv
 4. PDF files: pdf
-`webm` file type doesn't support right now.
+`webm` file type will be regard as vedieo even if it can be audio.
 
 
 ### Known Issues

@@ -16,7 +16,9 @@ import { DEFAULT_SETTINGS, extensions } from "./constants";
 import { ANFSettingTab, ribbons } from "./settings";
 import { FolderScanModal, FolderRenameWarningModal } from "./modals";
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const fs = require("fs");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const JSZip = require("jszip");
 
 let timeInterval = new Date();

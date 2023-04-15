@@ -1,3 +1,21 @@
+## [1.9.3](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.2...1.9.3) (2023-04-15)
+
+
+### Features
+
+* add image "webp" and video "webm" support ([1998399](https://github.com/JYC333/obsidian-file-structure-format/commit/1998399656c535429b3e4e8b7ea2ec68bf9cd111)), closes [#21](https://github.com/JYC333/obsidian-file-structure-format/issues/21)
+
+
+
+#  (2023-04-15)
+
+
+### Features
+
+* add image "webp" and video "webm" support ([0eb3fa1](https://github.com/JYC333/obsidian-file-structure-format/commit/0eb3fa1cd17ac1b98149f1d8161328a135b7adee)), closes [#21](https://github.com/JYC333/obsidian-file-structure-format/issues/21)
+
+
+
 ## [1.9.2](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.1...1.9.2) (2023-02-03)
 
 
