@@ -1,3 +1,13 @@
+## [1.9.4](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.3...1.9.4) (2023-04-15)
+
+
+### Features
+
+* add image "webp" and video "webm" support ([6fe610c](https://github.com/JYC333/obsidian-file-structure-format/commit/6fe610ca9dd6aabf68ce093294e9fb1d08cb23ab)), closes [#21](https://github.com/JYC333/obsidian-file-structure-format/issues/21)
+* support adding subfolder for each type of attachment ([1b8b886](https://github.com/JYC333/obsidian-file-structure-format/commit/1b8b886a3d7ab753bd48c48b5f0db41d45448ca9)), closes [#20](https://github.com/JYC333/obsidian-file-structure-format/issues/20)
+
+
+
 ## [1.9.3](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.2...1.9.3) (2023-04-15)
 
 

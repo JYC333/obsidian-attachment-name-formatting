@@ -12,7 +12,7 @@ import {
 	EmbedCache,
 } from "obsidian";
 import { ANFSettings } from "./types";
-import { DEFAULT_SETTINGS, extensions } from "./constants";
+import { DEFAULT_SETTINGS, extensions, ATTACHMENT_TYPE } from "./constants";
 import { ANFSettingTab, ribbons } from "./settings";
 import { FolderScanModal, FolderRenameWarningModal } from "./modals";
 
@@ -292,11 +292,16 @@ export default class AttachmentNameFormatting extends Plugin {
 					// Check if it exists and is of the correct type
 					if (attachmentFile instanceof TFile) {
 						// Create the new full name with path
-						const parent_path = attachmentFile.path.substring(
-							0,
-							attachmentFile.path.length -
-								attachmentFile.name.length
-						);
+						// Fetch attachment folder path setting
+						const parent_path =
+							this.app.vault.config.attachmentFolderPath;
+
+						// Fetch subfolder setting
+						const subfolder =
+							this.settings.subfolders[
+								ATTACHMENT_TYPE.indexOf(fileType)
+							] + "/";
+
 						const newName =
 							[
 								file.basename,
@@ -305,7 +310,18 @@ export default class AttachmentNameFormatting extends Plugin {
 							].join(this.settings.connector) +
 							"." +
 							attachmentFile.extension;
-						const fullName = parent_path + newName;
+
+						await this.app.vault.adapter
+							.exists(parent_path + subfolder)
+							.then(async (value) => {
+								if (!value) {
+									await this.app.vault.createFolder(
+										parent_path + subfolder
+									);
+								}
+							});
+
+						const fullName = parent_path + subfolder + newName;
 
 						// Check wether destination is existed, if existed,
 						// rename the destination file to a tmp name
@@ -341,13 +357,13 @@ export default class AttachmentNameFormatting extends Plugin {
 						}
 
 						await this.handleLog(
-							`Rename attachment ${attachmentFile.name} to ${newName}\n`
+							`Rename attachment ${attachmentFile.path} to ${fullName}\n`
 						);
 						console.log(
 							'Rename attachment "' +
-								attachmentFile.name +
+								attachmentFile.path +
 								'" to "' +
-								newName +
+								fullName +
 								'"'
 						);
 						await this.app.fileManager.renameFile(

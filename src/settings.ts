@@ -3,6 +3,7 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import AttachmentNameFormatting from "./main";
 import {
 	ExcludedFoldersModad,
+	SuboldersModad,
 	AttachmentExtensionModad,
 	DeletionWarningModal,
 	FilenameWarningModal,
@@ -50,7 +51,9 @@ export class ANFSettingTab extends PluginSettingTab {
 		containerEl.createEl("p", {
 			text: "Audio files: mp3, wav, m4a, ogg, 3gp, flac",
 		});
-		containerEl.createEl("p", { text: "Video files: mp4, webm, ogv, mov, mkv" });
+		containerEl.createEl("p", {
+			text: "Video files: mp4, webm, ogv, mov, mkv",
+		});
 		containerEl.createEl("p", { text: "PDF files: pdf" });
 		containerEl.createEl("p", {
 			text: '"webm" extension will be regard as video even if it can also be audio',
@@ -165,6 +168,17 @@ export class ANFSettingTab extends PluginSettingTab {
 					});
 			});
 		}
+
+		new Setting(containerEl)
+			.setName("Subfolders for attachments")
+			.setDesc(
+				"You can add subfolders for each attachment type under the attachment folder you set"
+			)
+			.addExtraButton((extraButton) => {
+				extraButton.onClick(() => {
+					new SuboldersModad(app, this.plugin).open();
+				});
+			});
 
 		containerEl.createEl("h2", { text: "Export Setting" });
 

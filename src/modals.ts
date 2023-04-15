@@ -1,6 +1,6 @@
 import { App, Modal, FuzzySuggestModal, Setting } from "obsidian";
 import AttachmentNameFormatting from "./main";
-import { extensions } from "./constants";
+import { extensions, ATTACHMENT_TYPE } from "./constants";
 
 export class ExcludedFoldersModad extends Modal {
 	plugin: AttachmentNameFormatting;
@@ -72,6 +72,52 @@ export class ExcludedFoldersModad extends Modal {
 				this.open();
 			});
 		});
+	}
+
+	onClose() {
+		const { contentEl } = this;
+		contentEl.empty();
+	}
+}
+
+export class SuboldersModad extends Modal {
+	plugin: AttachmentNameFormatting;
+
+	constructor(app: App, plugin: AttachmentNameFormatting) {
+		super(app);
+		this.plugin = plugin;
+	}
+
+	onOpen() {
+		const { contentEl } = this;
+		contentEl.createEl("h2", {
+			text: `Subfolders for attachments`,
+		});
+
+		for (const i in ATTACHMENT_TYPE) {
+			new Setting(contentEl)
+				.setName("Subfolder name for " + ATTACHMENT_TYPE[i])
+				.addText((text) =>
+					text
+						.setPlaceholder(ATTACHMENT_TYPE[i])
+						.setValue(
+							this.plugin.settings.subfolders[i] === ""
+								? ""
+								: this.plugin.settings.subfolders[i]
+						)
+						.onChange(async (value) => {
+							const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
+							if (fileNamepatn.test(value)) {
+								new FilenameWarningModal(this.app).open();
+								value = "";
+								this.onClose();
+								this.onOpen();
+							}
+							this.plugin.settings.subfolders[i] = value;
+							await this.plugin.saveSettings();
+						})
+				);
+		}
 	}
 
 	onClose() {

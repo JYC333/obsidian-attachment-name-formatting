@@ -17,6 +17,7 @@ export interface ANFSettings {
 	enablePdf: boolean;
 	pdfExtensions: boolean[];
 	pdf: string;
+	subfolders: string[];
 	connector: string;
 	exportCurrentRiboon: boolean;
 	exportUnusedRiboon: boolean;

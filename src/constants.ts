@@ -22,6 +22,7 @@ export const DEFAULT_SETTINGS: ANFSettings = {
 	enablePdf: true,
 	pdfExtensions: [true], // same amout with pdf extensions
 	pdf: "pdf",
+	subfolders: ["", "", "", ""],
 	connector: "_",
 	exportCurrentRiboon: false,
 	exportUnusedRiboon: false,
