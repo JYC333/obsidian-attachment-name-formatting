@@ -45,15 +45,15 @@ export class ANFSettingTab extends PluginSettingTab {
 		});
 		containerEl.createEl("h3", { text: "Supported file formats" });
 		containerEl.createEl("p", {
-			text: "Image files: png, jpg, jpeg, gif, bmp, svg",
+			text: "Image files: png, webp, jpg, jpeg, gif, bmp, svg",
 		});
 		containerEl.createEl("p", {
 			text: "Audio files: mp3, wav, m4a, ogg, 3gp, flac",
 		});
-		containerEl.createEl("p", { text: "Video files: mp4, ogv, mov, mkv" });
+		containerEl.createEl("p", { text: "Video files: mp4, webm, ogv, mov, mkv" });
 		containerEl.createEl("p", { text: "PDF files: pdf" });
 		containerEl.createEl("p", {
-			text: 'Do not have "webm" extension in audio and video right now',
+			text: '"webm" extension will be regard as video even if it can also be audio',
 		});
 		containerEl.createEl("h2", { text: "Attachments Format Setting" });
 

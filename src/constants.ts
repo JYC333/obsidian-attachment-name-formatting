@@ -1,15 +1,15 @@
 import { ANFSettings, ExtensionList } from "./types";
 
 export const extensions: ExtensionList = {
-	image: ["png", "jpg", "jpeg", "gif", "bmp", "svg"],
+	image: ["png", "webp", "jpg", "jpeg", "gif", "bmp", "svg"],
 	audio: ["mp3", "wav", "m4a", "ogg", "3gp", "flac"], // "webm"
-	video: ["mp4", "ogv", "mov", "mkv"], // "webm"
+	video: ["mp4", "webm", "ogv", "mov", "mkv"], // "webm"
 	pdf: ["pdf"],
 };
 
 export const DEFAULT_SETTINGS: ANFSettings = {
 	enableAuto: true,
-	excludedFolders:[],
+	excludedFolders: [],
 	enableImage: true,
 	imageExtensions: [true, true, true, true, true, true], // same amout with image extensions
 	image: "image",
