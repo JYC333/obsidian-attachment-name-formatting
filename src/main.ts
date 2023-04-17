@@ -16,6 +16,7 @@ import { DEFAULT_SETTINGS, extensions, ATTACHMENT_TYPE } from "./constants";
 import { ANFSettingTab, ribbons } from "./settings";
 import { FolderScanModal, FolderRenameWarningModal } from "./modals";
 
+import * as path from "path";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const fs = require("fs");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -293,14 +294,22 @@ export default class AttachmentNameFormatting extends Plugin {
 					if (attachmentFile instanceof TFile) {
 						// Create the new full name with path
 						// Fetch attachment folder path setting
-						const parent_path =
+
+						let parent_path =
 							this.app.vault.config.attachmentFolderPath;
+
+						if (parent_path.startsWith("./")) {
+							parent_path = path.join(
+								parent_path,
+								file.parent.path
+							);
+						}
 
 						// Fetch subfolder setting
 						const subfolder =
 							this.settings.subfolders[
 								ATTACHMENT_TYPE.indexOf(fileType)
-							] + "/";
+							];
 
 						const newName =
 							[
@@ -312,16 +321,18 @@ export default class AttachmentNameFormatting extends Plugin {
 							attachmentFile.extension;
 
 						await this.app.vault.adapter
-							.exists(parent_path + subfolder)
+							.exists(path.join(parent_path, subfolder))
 							.then(async (value) => {
 								if (!value) {
 									await this.app.vault.createFolder(
-										parent_path + subfolder
+										path.join(parent_path, subfolder)
 									);
 								}
 							});
 
-						const fullName = parent_path + subfolder + newName;
+						const fullName = path
+							.join(parent_path, subfolder, newName)
+							.replaceAll("\\", "/");
 
 						// Check wether destination is existed, if existed,
 						// rename the destination file to a tmp name

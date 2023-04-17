@@ -1,3 +1,12 @@
+## [1.9.5](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.4...1.9.5) (2023-04-17)
+
+
+### Bug Fixes
+
+* fix didn't rename to expected folder ([75f1b4e](https://github.com/JYC333/obsidian-file-structure-format/commit/75f1b4e14f3b33723443c21321e2870acf6083a2)), closes [#22](https://github.com/JYC333/obsidian-file-structure-format/issues/22)
+
+
+
 ## [1.9.4](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.3...1.9.4) (2023-04-15)
 
 
