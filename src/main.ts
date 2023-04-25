@@ -300,8 +300,8 @@ export default class AttachmentNameFormatting extends Plugin {
 
 						if (parent_path.startsWith("./")) {
 							parent_path = path.join(
-								parent_path,
-								file.parent.path
+								file.parent.path,
+								parent_path
 							);
 						}
 

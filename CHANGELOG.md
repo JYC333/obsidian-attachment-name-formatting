@@ -1,3 +1,12 @@
+## [1.9.6](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.5...1.9.6) (2023-04-25)
+
+
+### Bug Fixes
+
+* fix the bug from 1.9.4 ([9db97ef](https://github.com/JYC333/obsidian-file-structure-format/commit/9db97ef22866945709cb5ee901d5934d2a655828)), closes [#22](https://github.com/JYC333/obsidian-file-structure-format/issues/22) [#23](https://github.com/JYC333/obsidian-file-structure-format/issues/23)
+
+
+
 ## [1.9.5](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.4...1.9.5) (2023-04-17)
 
 
