@@ -1,3 +1,12 @@
+## [1.9.8](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.7...1.9.8) (2023-04-26)
+
+
+### Bug Fixes
+
+* fix the format of the time ([f234318](https://github.com/JYC333/obsidian-file-structure-format/commit/f23431821505462e5b71095ab5d01d1c0851fd8c))
+
+
+
 ## [1.9.7](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.6...1.9.7) (2023-04-26)
 
 

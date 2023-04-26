@@ -325,11 +325,13 @@ export default class AttachmentNameFormatting extends Plugin {
 							const date_String =
 								"" +
 								timeInterval.getFullYear() +
-								(timeInterval.getMonth() + 1) +
-								timeInterval.getDate() +
-								timeInterval.getHours() +
-								timeInterval.getMinutes() +
-								timeInterval.getSeconds();
+								("0" + (timeInterval.getMonth() + 1)).slice(
+									-2
+								) +
+								("0" + timeInterval.getDate()).slice(-2) +
+								("0" + timeInterval.getHours()).slice(-2) +
+								("0" + timeInterval.getMinutes()).slice(-2) +
+								("0" + timeInterval.getSeconds()).slice(-2);
 							baseNameComponent.push(date_String);
 						}
 
