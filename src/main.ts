@@ -202,9 +202,12 @@ export default class AttachmentNameFormatting extends Plugin {
 
 	loadFolders() {
 		this.allFolders = [];
+		// @ts-ignore
 		for (const fileOrFolder in this.app.vault.adapter.files) {
+			// @ts-ignore
 			if (this.app.vault.adapter.files[fileOrFolder].type === "folder") {
 				this.allFolders.push(
+					// @ts-ignore
 					this.app.vault.adapter.files[fileOrFolder].realpath
 				);
 			}
@@ -257,7 +260,7 @@ export default class AttachmentNameFormatting extends Plugin {
 							.split(this.settings.connector)
 							.slice(-2, -1)[0] === fileType
 					) {
-						const attachmentName = item.link.split(".")[0];
+						// const attachmentName = item.link.split(".")[0];
 					}
 					const attachmentExtension = item.link.split(".").pop();
 					const attachmentExtensionInd =
@@ -294,8 +297,8 @@ export default class AttachmentNameFormatting extends Plugin {
 					if (attachmentFile instanceof TFile) {
 						// Create the new full name with path
 						// Fetch attachment folder path setting
-
 						let parent_path =
+							// @ts-ignore
 							this.app.vault.config.attachmentFolderPath;
 
 						if (parent_path.startsWith("./")) {
@@ -311,15 +314,32 @@ export default class AttachmentNameFormatting extends Plugin {
 								ATTACHMENT_TYPE.indexOf(fileType)
 							];
 
+						const baseNameComponent = [
+							file.basename,
+							this.settings[fileType as keyof ANFSettings],
+							num,
+						];
+
+						// Fetch add time in name setting
+						if (this.settings.enableTime) {
+							const date_String =
+								"" +
+								timeInterval.getFullYear() +
+								(timeInterval.getMonth() + 1) +
+								timeInterval.getDate() +
+								timeInterval.getHours() +
+								timeInterval.getMinutes() +
+								timeInterval.getSeconds();
+							baseNameComponent.push(date_String);
+						}
+
+						// Generater full new name without path
 						const newName =
-							[
-								file.basename,
-								this.settings[fileType as keyof ANFSettings],
-								num,
-							].join(this.settings.connector) +
+							baseNameComponent.join(this.settings.connector) +
 							"." +
 							attachmentFile.extension;
 
+						// Create folder is not exist
 						await this.app.vault.adapter
 							.exists(path.join(parent_path, subfolder))
 							.then(async (value) => {
@@ -330,6 +350,7 @@ export default class AttachmentNameFormatting extends Plugin {
 								}
 							});
 
+						// Full name including path
 						const fullName = path
 							.join(parent_path, subfolder, newName)
 							.replaceAll("\\", "/");
@@ -599,6 +620,7 @@ export default class AttachmentNameFormatting extends Plugin {
 			}
 		});
 		// Should have a better way to get whether it is right-click on a link
+		// @ts-ignore
 		if (menu.items.length > 1 && this.settings.copyPath) {
 			menu.addItem((item) => {
 				item.setTitle("Copy Attachment Path")
@@ -623,6 +645,7 @@ export default class AttachmentNameFormatting extends Plugin {
 						}
 						if (this.settings.copyPathMode === "Absolute") {
 							full_path =
+								// @ts-ignore
 								this.app.vault.adapter.basePath.replace(
 									/\\/g,
 									"/"

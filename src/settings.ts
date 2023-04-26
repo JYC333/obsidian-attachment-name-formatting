@@ -75,6 +75,20 @@ export class ANFSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName("Add modify time after index")
+			.setDesc(
+				"Add modify time after index to track the change time in file name"
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.enableTime)
+					.onChange(async (value) => {
+						this.plugin.settings.enableTime = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("Excluded folders")
 			.setDesc(
 				"The notes under these folders will not reformat auto format the attachment name"

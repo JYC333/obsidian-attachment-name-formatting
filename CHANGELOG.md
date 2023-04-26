@@ -1,3 +1,12 @@
+## [1.9.7](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.6...1.9.7) (2023-04-26)
+
+
+### Features
+
+* allow add time after index in the attachment name ([59b2169](https://github.com/JYC333/obsidian-file-structure-format/commit/59b2169b2dbddec0c46a5126aab0738ecb4fd7bb)), closes [#24](https://github.com/JYC333/obsidian-file-structure-format/issues/24)
+
+
+
 ## [1.9.6](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.5...1.9.6) (2023-04-25)
 
 

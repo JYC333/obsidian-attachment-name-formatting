@@ -4,6 +4,7 @@
 
 export interface ANFSettings {
 	enableAuto: boolean;
+	enableTime: boolean;
 	excludedFolders: string[];
 	enableImage: boolean;
 	imageExtensions: boolean[];
