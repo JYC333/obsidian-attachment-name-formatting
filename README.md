@@ -4,17 +4,25 @@ This plugin will format all attachments in the format: "filename attachmentForma
 
 The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending number from 1 based on the attchmentFormat.You can change the default format for different type of attachments and the connector in the setting.
 
+There is a one-in-many situation, which means using the same attachment in many different notes. In this plugin, it gives three options to handle this situation:
+
+1. Default: Always rename with the note name;
+2. Copy: Create a copy for the attachment and rename with the new note name;
+3. NoChange: Stick to the first time that attachment is renamed, and will not occupy index number
+
+When using "Copy" mode, it will take a bit longer time than usual renaming time, around 1-2s. For "NoChange" mode, if you want to rename the attachment after it's renamed by this plugin, you need to rename it by yourself in the valut or in the file system right now. May add a Command later to handle this.
+
 **Note**: The base path of the attachments is based on the Valut setting: Files & Linsk -> Attachment folder path.
 
 ### Features
 
 #### Core Function
 
--   Format attachments in active file, such as "filename image 1.png". It can also add modify time after index, such as "filename image 1 20220101000000.png", defualt setting is not adding time. You can also exclude the filename in the attachment filename, but the time suffix will be added automatically.
+-   Format attachments in active file, such as "filename image 1.png". It can also add modify time after index, such as "filename image 1 20220101000000.png", defualt setting is not adding time. You can also exclude the filename in the attachment filename, but the time suffix will be added automatically and can only use the default mode for the one-in-many situation.
 -   Format attachmnets in selected folder
 -   Format attachments with customize subfolder for each attachment type
 -   Attachment name can be customized for each type of attachment, you can use any character that allowed in a file name
--   Connector (the character between filename, attachmentFormat and indexNumber) can be customized, you can use any character that allowed in a file name
+-   Connector (the character between filename, attachmentFormat and indexNumber) can be customized, you can use any character that allowed in a file name. You can also customized different connectors seperately or even don't use connector. But if you choose using none connector, you can only use the default mode the one-in-many situation.
 -   Add new attachment -> will rename the attachment based on type and index
 -   Change order -> will rename attachments with new order
 -   Delete attachment -> will rename attachments with new order
@@ -37,7 +45,6 @@ The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending n
 
 -   When delete an attachment which is already renamed, it will not rename and will occupy the indexNmuber for this note. But will be renamed to tmp_xxx if there is a conflict later.
 -   When there are two attachments have same name but in different paths, the function will not work correctly. Try to not change the setting "Files & Links -> Default location for new attachments".
--   One attachment file in different notes, it will be renamed when the note is modified.
 
 ### Roadmap
 

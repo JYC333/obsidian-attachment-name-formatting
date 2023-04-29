@@ -3,7 +3,7 @@
 // }
 
 export interface ANFSettings {
-	enableMultiConnector: boolean;
+	connectorOption: string;
 	connector: string;
 	multipleConnectors: string[];
 	enableImage: boolean;
@@ -18,6 +18,7 @@ export interface ANFSettings {
 	enablePdf: boolean;
 	pdfExtensions: boolean[];
 	pdf: string;
+	oneInMany: string;
 	enableAuto: boolean;
 	enableTime: boolean;
 	enableExcludeFileName: boolean;

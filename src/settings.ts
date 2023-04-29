@@ -6,8 +6,7 @@ import {
 	MultiConnectorModal,
 	SuboldersModal,
 	AttachmentExtensionModal,
-	DeletionWarningModal,
-	FilenameWarningModal,
+	WarningModal,
 } from "./modals";
 import { ANFSettings } from "./types";
 import { DEFAULT_SETTINGS, ATTACHMENT_TYPE } from "./constants";
@@ -67,23 +66,26 @@ export class ANFSettingTab extends PluginSettingTab {
 				"Set the format for connector between file name and attachment name, you can also set multiple connectors seperately."
 			);
 
-		if (this.plugin.settings.enableMultiConnector) {
+		if (this.plugin.settings.connectorOption === "Multiple") {
 			connectorSetting
 				.addExtraButton((extraButton) => {
 					extraButton.onClick(() => {
 						new MultiConnectorModal(app, this.plugin).open();
 					});
 				})
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.enableMultiConnector)
+				.addDropdown((dropDown) => {
+					dropDown
+						.addOption("None", "None")
+						.addOption("Single", "Single")
+						.addOption("Multiple", "Multiple")
+						.setValue("Multiple")
 						.onChange(async (value) => {
-							this.plugin.settings.enableMultiConnector = value;
+							this.plugin.settings.connectorOption = value;
 							await this.plugin.saveSettings();
 							this.display();
 						});
 				});
-		} else {
+		} else if (this.plugin.settings.connectorOption === "Single") {
 			connectorSetting
 				.addText((text) =>
 					text
@@ -94,9 +96,13 @@ export class ANFSettingTab extends PluginSettingTab {
 								: this.plugin.settings.connector
 						)
 						.onChange(async (value) => {
-							const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
+							const fileNamepatn =
+								/\||<|>|\?|\*|:|\/|\\|#|\^|\[|\]"/;
 							if (fileNamepatn.test(value)) {
-								new FilenameWarningModal(this.app).open();
+								new WarningModal(
+									this.app,
+									"Invalid character for filename, will remove the character!"
+								).open();
 								value = value.replace(fileNamepatn, "");
 								this.plugin.settings.connector = value;
 								this.display();
@@ -109,15 +115,31 @@ export class ANFSettingTab extends PluginSettingTab {
 							await this.plugin.saveSettings();
 						})
 				)
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.enableMultiConnector)
+				.addDropdown((dropDown) => {
+					dropDown
+						.addOption("None", "None")
+						.addOption("Single", "Single")
+						.addOption("Multiple", "Multiple")
+						.setValue("Single")
 						.onChange(async (value) => {
-							this.plugin.settings.enableMultiConnector = value;
+							this.plugin.settings.connectorOption = value;
 							await this.plugin.saveSettings();
 							this.display();
 						});
 				});
+		} else {
+			connectorSetting.addDropdown((dropDown) => {
+				dropDown
+					.addOption("None", "None")
+					.addOption("Single", "Single")
+					.addOption("Multiple", "Multiple")
+					.onChange(async (value) => {
+						this.plugin.settings.connectorOption = value;
+						this.plugin.settings.oneInMany = "Default";
+						await this.plugin.saveSettings();
+						this.display();
+					});
+			});
 		}
 
 		for (const item of ATTACHMENT_TYPE) {
@@ -143,7 +165,10 @@ export class ANFSettingTab extends PluginSettingTab {
 						.onChange(async (value) => {
 							const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
 							if (fileNamepatn.test(value)) {
-								new FilenameWarningModal(this.app).open();
+								new WarningModal(
+									this.app,
+									"Invalid character for filename, will remove the character!"
+								).open();
 								value = value.replace(fileNamepatn, "");
 								this.display();
 							}
@@ -179,6 +204,30 @@ export class ANFSettingTab extends PluginSettingTab {
 		}
 
 		new Setting(containerEl)
+			.setName("Handle same attachment used in different notes")
+			.setDesc(
+				"Choose to how to handle the same attachment used in different notes." +
+					"There are three options: " +
+					"1. Default: Always rename with the note name; " +
+					"2. Copy: Create a copy for the attachment; " +
+					"3. NoChange: Stick to the first time that attachment is renamed, and will not occupy index number;"
+			)
+			.addDropdown((dropDown) => {
+				dropDown
+					.addOption("Default", "Default")
+					.addOption("Copy", "Copy")
+					.addOption("NoChange", "NoChange")
+					.setDisabled(
+						this.plugin.settings.enableExcludeFileName ||
+							this.plugin.settings.connectorOption === "None"
+					)
+					.onChange(async (value) => {
+						this.plugin.settings.oneInMany = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("Automic formatting")
 			.setDesc(
 				"Automic formatting the attachments' name when changing note content"
@@ -201,15 +250,24 @@ export class ANFSettingTab extends PluginSettingTab {
 				toggle
 					.setValue(this.plugin.settings.enableTime)
 					.onChange(async (value) => {
-						this.plugin.settings.enableTime = value;
+						if (this.plugin.settings.enableExcludeFileName) {
+							new WarningModal(
+								app,
+								"Cannot exclude time suffix when enable exclude the note name!"
+							).open();
+							this.plugin.settings.enableTime = true;
+						} else {
+							this.plugin.settings.enableTime = value;
+						}
 						await this.plugin.saveSettings();
+						this.display();
 					});
 			});
 
 		new Setting(containerEl)
 			.setName("Exclude the note name in the attachment name")
 			.setDesc(
-				"Exclude the note name when rename the attachment name, will enable time suffix automically"
+				"Exclude the note name when rename the attachment name, will enable time suffix and disable one attachment in many notes setting automically."
 			)
 			.addToggle((toggle) => {
 				toggle
@@ -217,6 +275,7 @@ export class ANFSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.enableExcludeFileName = value;
 						this.plugin.settings.enableTime = value;
+						this.plugin.settings.oneInMany = "Default";
 						await this.plugin.saveSettings();
 						this.display();
 					});
@@ -310,7 +369,10 @@ export class ANFSettingTab extends PluginSettingTab {
 				toggle.onChange(async (value) => {
 					this.plugin.settings.exportCurrentDeletion = value;
 					if (value) {
-						new DeletionWarningModal(this.app).open();
+						new WarningModal(
+							this.app,
+							"Will delete the attachments and content after export!"
+						).open();
 					}
 					await this.plugin.saveSettings();
 				})
@@ -327,7 +389,10 @@ export class ANFSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.exportUnusedDeletion = value;
 						if (value) {
-							new DeletionWarningModal(this.app).open();
+							new WarningModal(
+								this.app,
+								"Will delete the attachments and content after export!"
+							).open();
 						}
 						await this.plugin.saveSettings();
 					})
@@ -353,12 +418,13 @@ export class ANFSettingTab extends PluginSettingTab {
 				.setName("Set Copy Link Type")
 				.setDesc("Choose to use relative path or absolute path.")
 				.addDropdown((dropDown) => {
-					dropDown.addOption("Relative", "Relative");
-					dropDown.addOption("Absolute", "Absolute");
-					dropDown.onChange(async (value) => {
-						this.plugin.settings.copyPathMode = value;
-						await this.plugin.saveSettings();
-					});
+					dropDown
+						.addOption("Relative", "Relative")
+						.addOption("Absolute", "Absolute")
+						.onChange(async (value) => {
+							this.plugin.settings.copyPathMode = value;
+							await this.plugin.saveSettings();
+						});
 				});
 		}
 

@@ -88,94 +88,63 @@ export class MultiConnectorModal extends Modal {
 		this.plugin = plugin;
 	}
 
+	checkValidity(value: string) {
+		const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|#|\^|\[|\]"/;
+		if (fileNamepatn.test(value)) {
+			new WarningModal(
+				this.app,
+				"Invalid character for filename, will remove the character!"
+			).open();
+			value = value.replace(fileNamepatn, "");
+			this.plugin.settings.multipleConnectors[0] = value;
+			this.onClose();
+			this.onOpen();
+		}
+	}
+
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.createEl("h2", {
 			text: `Connectors`,
 		});
 
-		new Setting(contentEl)
-			.setName("File name and attachment type")
-			.addText((text) =>
+		let optionLength;
+
+		const optionNames = [
+			"File name and attachment type",
+			"Attachment type and index number",
+			"Index number and time",
+		];
+
+		if (
+			this.plugin.settings.enableExcludeFileName ||
+			this.plugin.settings.enableTime
+		) {
+			optionLength = 3;
+		} else {
+			optionLength = 2;
+		}
+
+		const startPonit = this.plugin.settings.enableExcludeFileName ? 1 : 0;
+
+		for (let i = startPonit; i < optionLength; i++) {
+			new Setting(contentEl).setName(optionNames[i]).addText((text) =>
 				text
 					.setPlaceholder("_")
 					.setValue(
-						this.plugin.settings.multipleConnectors[0] === "_"
+						this.plugin.settings.multipleConnectors[i] === "_"
 							? ""
-							: this.plugin.settings.multipleConnectors[0]
+							: this.plugin.settings.multipleConnectors[i]
 					)
 					.onChange(async (value) => {
-						const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
-						if (fileNamepatn.test(value)) {
-							new FilenameWarningModal(this.app).open();
-							value = value.replace(fileNamepatn, "");
-							this.plugin.settings.multipleConnectors[0] = value;
-							this.onClose();
-							this.onOpen();
-						}
-						this.plugin.settings.multipleConnectors[0] =
+						this.checkValidity(value);
+						this.plugin.settings.multipleConnectors[i] =
 							value === ""
-								? DEFAULT_SETTINGS.multipleConnectors[0]
+								? DEFAULT_SETTINGS.multipleConnectors[i]
 								: value;
 						await this.plugin.saveSettings();
 					})
 			);
-
-		new Setting(contentEl)
-			.setName("Attachment type and index number")
-			.addText((text) =>
-				text
-					.setPlaceholder("_")
-					.setValue(
-						this.plugin.settings.multipleConnectors[1] === "_"
-							? ""
-							: this.plugin.settings.multipleConnectors[1]
-					)
-					.onChange(async (value) => {
-						const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
-						if (fileNamepatn.test(value)) {
-							new FilenameWarningModal(this.app).open();
-							value = value.replace(fileNamepatn, "");
-							this.plugin.settings.multipleConnectors[1] = value;
-							this.onClose();
-							this.onOpen();
-						}
-						this.plugin.settings.multipleConnectors[1] =
-							value === ""
-								? DEFAULT_SETTINGS.multipleConnectors[1]
-								: value;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		if (this.plugin.settings.enableTime) {
-			new Setting(contentEl)
-				.setName("Index number and time")
-				.addText((text) =>
-					text
-						.setPlaceholder("_")
-						.setValue(
-							this.plugin.settings.multipleConnectors[2] === "_"
-								? ""
-								: this.plugin.settings.multipleConnectors[2]
-						)
-						.onChange(async (value) => {
-							const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
-							if (fileNamepatn.test(value)) {
-								new FilenameWarningModal(this.app).open();
-								value = value.replace(fileNamepatn, "");
-								this.plugin.settings.multipleConnectors[2] =
-									value;
-								this.onClose();
-								this.onOpen();
-							}
-							this.plugin.settings.multipleConnectors[2] =
-								value === ""
-									? DEFAULT_SETTINGS.multipleConnectors[2]
-									: value;
-							await this.plugin.saveSettings();
-						})
-				);
 		}
 
 		new Setting(contentEl).addButton((button) =>
@@ -224,7 +193,10 @@ export class SuboldersModal extends Modal {
 						.onChange(async (value) => {
 							const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
 							if (fileNamepatn.test(value)) {
-								new FilenameWarningModal(this.app).open();
+								new WarningModal(
+									this.app,
+									"Invalid character for filename, will remove the character!"
+								).open();
 								value = "";
 								this.onClose();
 								this.onOpen();
@@ -289,34 +261,26 @@ export class AttachmentExtensionModal extends Modal {
 	}
 }
 
-export class DeletionWarningModal extends Modal {
-	constructor(app: App) {
+export class WarningModal extends Modal {
+	text: string;
+
+	constructor(app: App, text: string) {
 		super(app);
+		this.text = text;
 	}
 
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.createEl("h1", {
-			text: "Will delete the attachments and content after export!",
+			text: this.text,
 		});
-	}
 
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-}
-
-export class FilenameWarningModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		const { contentEl } = this;
-		contentEl.createEl("h1", {
-			text: "Invalid character for filename, will remove the character!",
-		});
+		new Setting(contentEl).addButton((button) =>
+			button
+				.setButtonText("OK")
+				.setCta()
+				.onClick(() => this.close())
+		);
 	}
 
 	onClose() {

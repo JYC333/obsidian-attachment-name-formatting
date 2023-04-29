@@ -9,7 +9,6 @@ import {
 	Menu,
 	Editor,
 	TFolder,
-	EmbedCache,
 } from "obsidian";
 import { ANFSettings } from "./types";
 import { DEFAULT_SETTINGS, extensions, ATTACHMENT_TYPE } from "./constants";
@@ -31,7 +30,9 @@ interface AttachmentList {
 export default class AttachmentNameFormatting extends Plugin {
 	settings: ANFSettings;
 	allFolders: string[];
-	renaming: boolean;
+	renaming = false;
+	renameCopyAttachment: string[] = [];
+	renamingCopyAttachment = true;
 
 	async onload() {
 		await this.loadSettings();
@@ -63,6 +64,12 @@ export default class AttachmentNameFormatting extends Plugin {
 						this.handleAttachmentNameFormatting(file);
 					}
 				}
+			})
+		);
+
+		this.registerEvent(
+			this.app.workspace.on("editor-change", async (editor) => {
+				await this.handleCopyAttachment(editor);
 			})
 		);
 
@@ -254,14 +261,6 @@ export default class AttachmentNameFormatting extends Plugin {
 						fileType.slice(1)) as keyof ANFSettings;
 					const extensionEnable = (fileType +
 						"Extensions") as keyof ANFSettings;
-					// Check whether the attachment is already renamed by this plugin
-					if (
-						item.link
-							.split(this.settings.connector)
-							.slice(-2, -1)[0] === fileType
-					) {
-						// const attachmentName = item.link.split(".")[0];
-					}
 					const attachmentExtension = item.link.split(".").pop();
 					const attachmentExtensionInd =
 						extensions[fileType].indexOf(attachmentExtension);
@@ -275,7 +274,61 @@ export default class AttachmentNameFormatting extends Plugin {
 							attachmentList[fileType] = [];
 						}
 						// Find the attachment file
-						const attachmentFile = this.getAttachment(item);
+						const attachmentFile = this.getAttachment(item.link);
+
+						// Check whether the attachment is already renamed by this plugin
+						// and the attachment is not associated with this note
+						if (
+							this.checkAlreadyRenamed(
+								item.link,
+								file.basename,
+								this.settings[
+									fileType as keyof ANFSettings
+								] as string
+							) &&
+							!this.settings.enableExcludeFileName
+						) {
+							if (this.settings.oneInMany === "NoChange") {
+								console.log(
+									`NoChange option enable, skip renaming ${item.link}`
+								);
+								await this.handleLog(
+									`NoChange option enable, skip renaming ${item.link}`
+								);
+								continue;
+							} else if (this.settings.oneInMany === "Copy") {
+								console.log(
+									`Copy option enable, will copy ${item.link}`
+								);
+								await this.handleLog(
+									`Copy option enable, will copy ${item.link}`
+								);
+
+								const copiedAttachmentPath =
+									attachmentFile.path.replace(
+										path.extname(attachmentFile.path),
+										"_copy" +
+											path.extname(attachmentFile.path)
+									);
+
+								await this.app.vault.adapter.copy(
+									attachmentFile.path,
+									copiedAttachmentPath
+								);
+
+								this.renameCopyAttachment = [
+									item.link,
+									path.basename(copiedAttachmentPath),
+								];
+
+								while (this.renameCopyAttachment.length !== 0) {
+									await sleep(100);
+									continue;
+								}
+								continue;
+							}
+						}
+
 						// Avoid duplication
 						if (
 							!attachmentList[fileType].contains(attachmentFile)
@@ -341,19 +394,32 @@ export default class AttachmentNameFormatting extends Plugin {
 
 						// Generater full new name without path
 						let newName = "";
-						if (this.settings.enableMultiConnector) {
+						if (this.settings.connectorOption === "Multiple") {
 							newName += baseNameComponent[0];
-							for (let i = 1; i < baseNameComponent.length; i++) {
+							const startPoint = this.settings
+								.enableExcludeFileName
+								? 2
+								: 1;
+							for (
+								let i = startPoint;
+								i < baseNameComponent.length;
+								i++
+							) {
 								newName +=
 									this.settings.multipleConnectors[i - 1] +
 									baseNameComponent[i];
 							}
 							newName += "." + attachmentFile.extension;
-						} else {
+						} else if (this.settings.connectorOption === "Single") {
 							newName =
 								baseNameComponent.join(
 									this.settings.connector
 								) +
+								"." +
+								attachmentFile.extension;
+						} else {
+							newName =
+								baseNameComponent.join("") +
 								"." +
 								attachmentFile.extension;
 						}
@@ -454,7 +520,7 @@ export default class AttachmentNameFormatting extends Plugin {
 					const attachmentExtension = item.link.split(".").pop();
 					console.log("Collecting attachments...");
 					if (fileExtensions.contains(attachmentExtension)) {
-						const attachement = this.getAttachment(item);
+						const attachement = this.getAttachment(item.link);
 
 						const file_path = normalizePath(
 							// @ts-ignore
@@ -503,7 +569,7 @@ export default class AttachmentNameFormatting extends Plugin {
 			if (this.settings.exportCurrentDeletion) {
 				console.log("Deleting attachments...");
 				for (const item of attachments.embeds) {
-					const attachmentFile = this.getAttachment(item);
+					const attachmentFile = this.getAttachment(item.link);
 					content = content.replace(item.original, "");
 					console.log("Delete attachment", attachmentFile.name);
 					await this.app.vault.delete(attachmentFile);
@@ -538,7 +604,9 @@ export default class AttachmentNameFormatting extends Plugin {
 			const attachments = this.app.metadataCache.getFileCache(mdfile);
 			if (attachments.hasOwnProperty("embeds")) {
 				for (const item of attachments.embeds) {
-					const attachmentFile = this.getAttachment(item) as TFile;
+					const attachmentFile = this.getAttachment(
+						item.link
+					) as TFile;
 					if (attachmentFiles.contains(attachmentFile)) {
 						attachmentFiles.remove(attachmentFile);
 					}
@@ -682,17 +750,15 @@ export default class AttachmentNameFormatting extends Plugin {
 	/**
 	 * Get attachment file
 	 *
-	 * @param	{EmbedCache}			item	The attachment item
-	 * @return	{TAbstractFile|TFile}			The attachment TAbstractFile object
+	 * @param	{string}			attachmentName	The attachment name
+	 * @return	{TAbstractFile|TFile}				The attachment TAbstractFile object
 	 */
-	getAttachment(item: EmbedCache): TAbstractFile | TFile {
+	getAttachment(attachmentName: string): TAbstractFile | TFile {
 		const file_path = parseLinktext(
-			item.link.replace(/(\.\/)|(\.\.\/)+/g, "")
+			attachmentName.replace(/(\.\/)|(\.\.\/)+/g, "")
 		).path;
 
-		let attachmentFile = this.app.vault.getAbstractFileByPath(
-			parseLinktext(item.link.replace(/(\.\/)|(\.\.\/)+/g, "")).path
-		);
+		let attachmentFile = this.app.vault.getAbstractFileByPath(file_path);
 		if (!attachmentFile) {
 			attachmentFile = this.app.metadataCache.getFirstLinkpathDest(
 				file_path,
@@ -701,6 +767,108 @@ export default class AttachmentNameFormatting extends Plugin {
 		}
 
 		return attachmentFile;
+	}
+
+	/**
+	 * Check whether the attachmnet is already renamed by this plugin
+	 *
+	 * @param	{string}	name			The attachment name
+	 * @param	{string}	attachmentType	The attachment type
+	 * @return	{boolean}					Whether the attachment is renamed by this plugin
+	 */
+	checkAlreadyRenamed(
+		name: string,
+		noteName: string,
+		attachmentType: string
+	): boolean {
+		name = name.replace(path.extname(name), "");
+
+		// Get components of the renamed attachment
+		let components = [];
+		if (this.settings.connectorOption) {
+			const regexString = /xxx(\S*)/;
+			for (const i in this.settings.multipleConnectors) {
+				const newRegex = RegExp(
+					regexString
+						.toString()
+						.replace(/\//g, "")
+						.replace(
+							/xxx/g,
+							`\\` + this.settings.multipleConnectors[i]
+						)
+				);
+				const matchString = name.match(newRegex);
+				if (matchString) {
+					components.push(name.replace(name.match(newRegex)[0], ""));
+					name = name.match(newRegex)[1];
+				} else {
+					components.push(name);
+				}
+			}
+			if (
+				!this.settings.enableExcludeFileName &&
+				this.settings.enableTime
+			) {
+				components.push(name);
+			}
+		} else {
+			components = [...name.split(this.settings.connector)];
+		}
+
+		// Check whether the compents are followed the renaming pattern
+		if (this.settings.enableTime) {
+			const dateCheck = new Date(
+				+components[3].slice(0, 4),
+				+components[3].slice(4, 6) - 1,
+				+components[3].slice(6, 8),
+				+components[3].slice(8, 10),
+				+components[3].slice(10, 12),
+				+components[3].slice(12, 14)
+			);
+			if (
+				components.length === 4 &&
+				components[0] !== noteName &&
+				components[1] === attachmentType &&
+				dateCheck.toString() !== "Invalid Date"
+			) {
+				return true;
+			}
+		} else {
+			if (
+				components.length === 3 &&
+				components[0] !== noteName &&
+				components[1] === attachmentType
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	async handleCopyAttachment(editor: Editor) {
+		if (!this.renamingCopyAttachment) {
+			return;
+		}
+		this.renamingCopyAttachment = false;
+		let waitingTime = 0;
+		await sleep(1000);
+		while (this.renameCopyAttachment.length === 0 || !this.renaming) {
+			await sleep(100);
+			if (waitingTime > 50) {
+				this.renamingCopyAttachment = true;
+				return;
+			}
+			waitingTime += 1;
+			continue;
+		}
+		let data = editor.getValue();
+		data = data.replace(
+			this.renameCopyAttachment[0],
+			this.renameCopyAttachment[1]
+		);
+		editor.setValue(data);
+		this.renameCopyAttachment = [];
+		this.renamingCopyAttachment = true;
 	}
 
 	/**

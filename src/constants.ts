@@ -8,7 +8,7 @@ export const extensions: ExtensionList = {
 };
 
 export const DEFAULT_SETTINGS: ANFSettings = {
-	enableMultiConnector: false,
+	connectorOption: "Single",
 	connector: "_",
 	multipleConnectors: ["_", "_", "_"],
 	enableImage: true,
@@ -23,9 +23,10 @@ export const DEFAULT_SETTINGS: ANFSettings = {
 	enablePdf: true,
 	pdfExtensions: [true], // same amout with pdf extensions
 	pdf: "pdf",
+	oneInMany: "Default",
 	enableAuto: true,
 	enableTime: false,
-	enableExcludeFileName:false,
+	enableExcludeFileName: false,
 	excludedFolders: [],
 	subfolders: ["", "", "", ""],
 	exportCurrentRiboon: false,

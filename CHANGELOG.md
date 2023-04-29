@@ -1,3 +1,12 @@
+# [2.0.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.10.0...2.0.0) (2023-04-29)
+
+
+### Features
+
+* support the one-in-many situation ([5a6e245](https://github.com/JYC333/obsidian-file-structure-format/commit/5a6e245f47781f55b26e3115d40639e8f91a6fdc)), closes [#5](https://github.com/JYC333/obsidian-file-structure-format/issues/5)
+
+
+
 # [1.10.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.8...1.10.0) (2023-04-29)
 
 
