@@ -1,3 +1,12 @@
+# [1.10.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.8...1.10.0) (2023-04-29)
+
+
+### Features
+
+* can use different connectors in the attachment name ([90c371c](https://github.com/JYC333/obsidian-file-structure-format/commit/90c371cf69c3f91711712343db957c1f066eea4a)), closes [#25](https://github.com/JYC333/obsidian-file-structure-format/issues/25)
+
+
+
 ## [1.9.8](https://github.com/JYC333/obsidian-file-structure-format/compare/1.9.7...1.9.8) (2023-04-26)
 
 

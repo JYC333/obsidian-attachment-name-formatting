@@ -3,9 +3,9 @@
 // }
 
 export interface ANFSettings {
-	enableAuto: boolean;
-	enableTime: boolean;
-	excludedFolders: string[];
+	enableMultiConnector: boolean;
+	connector: string;
+	multipleConnectors: string[];
 	enableImage: boolean;
 	imageExtensions: boolean[];
 	image: string;
@@ -18,8 +18,11 @@ export interface ANFSettings {
 	enablePdf: boolean;
 	pdfExtensions: boolean[];
 	pdf: string;
+	enableAuto: boolean;
+	enableTime: boolean;
+	enableExcludeFileName: boolean;
+	excludedFolders: string[];
 	subfolders: string[];
-	connector: string;
 	exportCurrentRiboon: boolean;
 	exportUnusedRiboon: boolean;
 	exportCurrentDeletion: boolean;

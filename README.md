@@ -10,7 +10,7 @@ The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending n
 
 #### Core Function
 
--   Format attachments in active file, such as "filename image 1.png". It can also add modify time after index, such as "filename image 1 20220101000000.png", defualt setting is not adding time.
+-   Format attachments in active file, such as "filename image 1.png". It can also add modify time after index, such as "filename image 1 20220101000000.png", defualt setting is not adding time. You can also exclude the filename in the attachment filename, but the time suffix will be added automatically.
 -   Format attachmnets in selected folder
 -   Format attachments with customize subfolder for each attachment type
 -   Attachment name can be customized for each type of attachment, you can use any character that allowed in a file name

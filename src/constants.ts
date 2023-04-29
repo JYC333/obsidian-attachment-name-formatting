@@ -8,9 +8,9 @@ export const extensions: ExtensionList = {
 };
 
 export const DEFAULT_SETTINGS: ANFSettings = {
-	enableAuto: true,
-	enableTime: false,
-	excludedFolders: [],
+	enableMultiConnector: false,
+	connector: "_",
+	multipleConnectors: ["_", "_", "_"],
 	enableImage: true,
 	imageExtensions: [true, true, true, true, true, true, true], // same amout with image extensions
 	image: "image",
@@ -23,8 +23,11 @@ export const DEFAULT_SETTINGS: ANFSettings = {
 	enablePdf: true,
 	pdfExtensions: [true], // same amout with pdf extensions
 	pdf: "pdf",
+	enableAuto: true,
+	enableTime: false,
+	enableExcludeFileName:false,
+	excludedFolders: [],
 	subfolders: ["", "", "", ""],
-	connector: "_",
 	exportCurrentRiboon: false,
 	exportUnusedRiboon: false,
 	exportCurrentDeletion: false,

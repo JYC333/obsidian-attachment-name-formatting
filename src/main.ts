@@ -320,6 +320,10 @@ export default class AttachmentNameFormatting extends Plugin {
 							num,
 						];
 
+						if (this.settings.enableExcludeFileName) {
+							baseNameComponent.shift();
+						}
+
 						// Fetch add time in name setting
 						if (this.settings.enableTime) {
 							const date_String =
@@ -336,10 +340,24 @@ export default class AttachmentNameFormatting extends Plugin {
 						}
 
 						// Generater full new name without path
-						const newName =
-							baseNameComponent.join(this.settings.connector) +
-							"." +
-							attachmentFile.extension;
+						let newName = "";
+						if (this.settings.enableMultiConnector) {
+							newName += baseNameComponent[0];
+							for (let i = 1; i < baseNameComponent.length; i++) {
+								newName +=
+									this.settings.multipleConnectors[i - 1] +
+									baseNameComponent[i];
+							}
+							newName += "." + attachmentFile.extension;
+						} else {
+							newName =
+								baseNameComponent.join(
+									this.settings.connector
+								) +
+								"." +
+								attachmentFile.extension;
+						}
+						console.log(newName);
 
 						// Create folder is not exist
 						await this.app.vault.adapter

@@ -2,9 +2,10 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import AttachmentNameFormatting from "./main";
 import {
-	ExcludedFoldersModad,
-	SuboldersModad,
-	AttachmentExtensionModad,
+	ExcludedFoldersModal,
+	MultiConnectorModal,
+	SuboldersModal,
+	AttachmentExtensionModal,
 	DeletionWarningModal,
 	FilenameWarningModal,
 } from "./modals";
@@ -60,70 +61,64 @@ export class ANFSettingTab extends PluginSettingTab {
 		});
 		containerEl.createEl("h2", { text: "Attachments Format Setting" });
 
-		new Setting(containerEl)
-			.setName("Automic formatting")
-			.setDesc(
-				"Automic formatting the attachments' name when changing note content"
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.enableAuto)
-					.onChange(async (value) => {
-						this.plugin.settings.enableAuto = value;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Add modify time after index")
-			.setDesc(
-				"Add modify time after index to track the change time in file name"
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.enableTime)
-					.onChange(async (value) => {
-						this.plugin.settings.enableTime = value;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Excluded folders")
-			.setDesc(
-				"The notes under these folders will not reformat auto format the attachment name"
-			)
-			.addExtraButton((extraButton) => {
-				extraButton.onClick(() => {
-					new ExcludedFoldersModad(app, this.plugin).open();
-				});
-			});
-
-		new Setting(containerEl)
+		const connectorSetting = new Setting(containerEl)
 			.setName("Format for connector")
 			.setDesc(
-				"Set the format for connector between file name and attachment name."
-			)
-			.addText((text) =>
-				text
-					.setPlaceholder("_")
-					.setValue(
-						this.plugin.settings.connector === "_"
-							? ""
-							: this.plugin.settings.connector
-					)
-					.onChange(async (value) => {
-						const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
-						if (fileNamepatn.test(value)) {
-							new FilenameWarningModal(this.app).open();
-							value = "_";
-							this.display();
-						}
-						this.plugin.settings.connector =
-							value === "" ? DEFAULT_SETTINGS.connector : value;
-						await this.plugin.saveSettings();
-					})
+				"Set the format for connector between file name and attachment name, you can also set multiple connectors seperately."
 			);
+
+		if (this.plugin.settings.enableMultiConnector) {
+			connectorSetting
+				.addExtraButton((extraButton) => {
+					extraButton.onClick(() => {
+						new MultiConnectorModal(app, this.plugin).open();
+					});
+				})
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.enableMultiConnector)
+						.onChange(async (value) => {
+							this.plugin.settings.enableMultiConnector = value;
+							await this.plugin.saveSettings();
+							this.display();
+						});
+				});
+		} else {
+			connectorSetting
+				.addText((text) =>
+					text
+						.setPlaceholder("_")
+						.setValue(
+							this.plugin.settings.connector === "_"
+								? ""
+								: this.plugin.settings.connector
+						)
+						.onChange(async (value) => {
+							const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
+							if (fileNamepatn.test(value)) {
+								new FilenameWarningModal(this.app).open();
+								value = value.replace(fileNamepatn, "");
+								this.plugin.settings.connector = value;
+								this.display();
+							}
+							this.plugin.settings.connector =
+								value === ""
+									? DEFAULT_SETTINGS.connector
+									: value;
+
+							await this.plugin.saveSettings();
+						})
+				)
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.enableMultiConnector)
+						.onChange(async (value) => {
+							this.plugin.settings.enableMultiConnector = value;
+							await this.plugin.saveSettings();
+							this.display();
+						});
+				});
+		}
 
 		for (const item of ATTACHMENT_TYPE) {
 			const attachmentType = item as keyof ANFSettings;
@@ -163,7 +158,7 @@ export class ANFSettingTab extends PluginSettingTab {
 
 				typeSetting.addExtraButton((extraButton) => {
 					extraButton.onClick(() => {
-						new AttachmentExtensionModad(
+						new AttachmentExtensionModal(
 							app,
 							attachmentType,
 							this.plugin
@@ -184,13 +179,68 @@ export class ANFSettingTab extends PluginSettingTab {
 		}
 
 		new Setting(containerEl)
+			.setName("Automic formatting")
+			.setDesc(
+				"Automic formatting the attachments' name when changing note content"
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.enableAuto)
+					.onChange(async (value) => {
+						this.plugin.settings.enableAuto = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Add modify time after index")
+			.setDesc(
+				"Add modify time after index to track the change time in file name"
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.enableTime)
+					.onChange(async (value) => {
+						this.plugin.settings.enableTime = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Exclude the note name in the attachment name")
+			.setDesc(
+				"Exclude the note name when rename the attachment name, will enable time suffix automically"
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.enableExcludeFileName)
+					.onChange(async (value) => {
+						this.plugin.settings.enableExcludeFileName = value;
+						this.plugin.settings.enableTime = value;
+						await this.plugin.saveSettings();
+						this.display();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Excluded folders")
+			.setDesc(
+				"The notes under these folders will not reformat auto format the attachment name"
+			)
+			.addExtraButton((extraButton) => {
+				extraButton.onClick(() => {
+					new ExcludedFoldersModal(app, this.plugin).open();
+				});
+			});
+
+		new Setting(containerEl)
 			.setName("Subfolders for attachments")
 			.setDesc(
 				"You can add subfolders for each attachment type under the attachment folder you set"
 			)
 			.addExtraButton((extraButton) => {
 				extraButton.onClick(() => {
-					new SuboldersModad(app, this.plugin).open();
+					new SuboldersModal(app, this.plugin).open();
 				});
 			});
 

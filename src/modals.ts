@@ -1,8 +1,8 @@
 import { App, Modal, FuzzySuggestModal, Setting } from "obsidian";
 import AttachmentNameFormatting from "./main";
-import { extensions, ATTACHMENT_TYPE } from "./constants";
+import { extensions, DEFAULT_SETTINGS, ATTACHMENT_TYPE } from "./constants";
 
-export class ExcludedFoldersModad extends Modal {
+export class ExcludedFoldersModal extends Modal {
 	plugin: AttachmentNameFormatting;
 	noneExcludedFolders: Record<string, string> = {};
 
@@ -80,7 +80,123 @@ export class ExcludedFoldersModad extends Modal {
 	}
 }
 
-export class SuboldersModad extends Modal {
+export class MultiConnectorModal extends Modal {
+	plugin: AttachmentNameFormatting;
+
+	constructor(app: App, plugin: AttachmentNameFormatting) {
+		super(app);
+		this.plugin = plugin;
+	}
+
+	onOpen() {
+		const { contentEl } = this;
+		contentEl.createEl("h2", {
+			text: `Connectors`,
+		});
+
+		new Setting(contentEl)
+			.setName("File name and attachment type")
+			.addText((text) =>
+				text
+					.setPlaceholder("_")
+					.setValue(
+						this.plugin.settings.multipleConnectors[0] === "_"
+							? ""
+							: this.plugin.settings.multipleConnectors[0]
+					)
+					.onChange(async (value) => {
+						const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
+						if (fileNamepatn.test(value)) {
+							new FilenameWarningModal(this.app).open();
+							value = value.replace(fileNamepatn, "");
+							this.plugin.settings.multipleConnectors[0] = value;
+							this.onClose();
+							this.onOpen();
+						}
+						this.plugin.settings.multipleConnectors[0] =
+							value === ""
+								? DEFAULT_SETTINGS.multipleConnectors[0]
+								: value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(contentEl)
+			.setName("Attachment type and index number")
+			.addText((text) =>
+				text
+					.setPlaceholder("_")
+					.setValue(
+						this.plugin.settings.multipleConnectors[1] === "_"
+							? ""
+							: this.plugin.settings.multipleConnectors[1]
+					)
+					.onChange(async (value) => {
+						const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
+						if (fileNamepatn.test(value)) {
+							new FilenameWarningModal(this.app).open();
+							value = value.replace(fileNamepatn, "");
+							this.plugin.settings.multipleConnectors[1] = value;
+							this.onClose();
+							this.onOpen();
+						}
+						this.plugin.settings.multipleConnectors[1] =
+							value === ""
+								? DEFAULT_SETTINGS.multipleConnectors[1]
+								: value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		if (this.plugin.settings.enableTime) {
+			new Setting(contentEl)
+				.setName("Index number and time")
+				.addText((text) =>
+					text
+						.setPlaceholder("_")
+						.setValue(
+							this.plugin.settings.multipleConnectors[2] === "_"
+								? ""
+								: this.plugin.settings.multipleConnectors[2]
+						)
+						.onChange(async (value) => {
+							const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
+							if (fileNamepatn.test(value)) {
+								new FilenameWarningModal(this.app).open();
+								value = value.replace(fileNamepatn, "");
+								this.plugin.settings.multipleConnectors[2] =
+									value;
+								this.onClose();
+								this.onOpen();
+							}
+							this.plugin.settings.multipleConnectors[2] =
+								value === ""
+									? DEFAULT_SETTINGS.multipleConnectors[2]
+									: value;
+							await this.plugin.saveSettings();
+						})
+				);
+		}
+
+		new Setting(contentEl).addButton((button) =>
+			button.setButtonText("Reset").onClick(async () => {
+				this.plugin.settings.multipleConnectors = [
+					...DEFAULT_SETTINGS.multipleConnectors,
+				];
+				await this.plugin.saveSettings();
+				this.onClose();
+				this.onOpen();
+			})
+		);
+	}
+
+	onClose() {
+		const { contentEl } = this;
+		contentEl.empty();
+	}
+}
+
+export class SuboldersModal extends Modal {
 	plugin: AttachmentNameFormatting;
 
 	constructor(app: App, plugin: AttachmentNameFormatting) {
@@ -126,7 +242,7 @@ export class SuboldersModad extends Modal {
 	}
 }
 
-export class AttachmentExtensionModad extends Modal {
+export class AttachmentExtensionModal extends Modal {
 	attachmentType: string;
 	plugin: AttachmentNameFormatting;
 
