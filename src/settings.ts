@@ -75,7 +75,6 @@ export class ANFSettingTab extends PluginSettingTab {
 				})
 				.addDropdown((dropDown) => {
 					dropDown
-						.addOption("None", "None")
 						.addOption("Single", "Single")
 						.addOption("Multiple", "Multiple")
 						.setValue("Multiple")
@@ -117,7 +116,6 @@ export class ANFSettingTab extends PluginSettingTab {
 				)
 				.addDropdown((dropDown) => {
 					dropDown
-						.addOption("None", "None")
 						.addOption("Single", "Single")
 						.addOption("Multiple", "Multiple")
 						.setValue("Single")
@@ -127,19 +125,6 @@ export class ANFSettingTab extends PluginSettingTab {
 							this.display();
 						});
 				});
-		} else {
-			connectorSetting.addDropdown((dropDown) => {
-				dropDown
-					.addOption("None", "None")
-					.addOption("Single", "Single")
-					.addOption("Multiple", "Multiple")
-					.onChange(async (value) => {
-						this.plugin.settings.connectorOption = value;
-						this.plugin.settings.oneInMany = "Default";
-						await this.plugin.saveSettings();
-						this.display();
-					});
-			});
 		}
 
 		for (const item of ATTACHMENT_TYPE) {
@@ -217,10 +202,8 @@ export class ANFSettingTab extends PluginSettingTab {
 					.addOption("Default", "Default")
 					.addOption("Copy", "Copy")
 					.addOption("NoChange", "NoChange")
-					.setDisabled(
-						this.plugin.settings.enableExcludeFileName ||
-							this.plugin.settings.connectorOption === "None"
-					)
+					.setValue(this.plugin.settings.oneInMany)
+					.setDisabled(this.plugin.settings.enableExcludeFileName)
 					.onChange(async (value) => {
 						this.plugin.settings.oneInMany = value;
 						await this.plugin.saveSettings();
@@ -275,6 +258,8 @@ export class ANFSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.enableExcludeFileName = value;
 						this.plugin.settings.enableTime = value;
+						this.plugin.settings.multipleConnectorsEnabled[0] =
+							!value;
 						this.plugin.settings.oneInMany = "Default";
 						await this.plugin.saveSettings();
 						this.display();

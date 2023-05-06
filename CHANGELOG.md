@@ -1,3 +1,12 @@
+# [2.1.0](https://github.com/JYC333/obsidian-file-structure-format/compare/2.0.0...2.1.0) (2023-05-06)
+
+
+### Features
+
+* update the multiconnector setting strategy ([e83714b](https://github.com/JYC333/obsidian-file-structure-format/commit/e83714b0077704497b5219c55762e0bebcaaccbc))
+
+
+
 # [2.0.0](https://github.com/JYC333/obsidian-file-structure-format/compare/1.10.0...2.0.0) (2023-04-29)
 
 

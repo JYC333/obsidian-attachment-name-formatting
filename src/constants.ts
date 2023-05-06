@@ -11,6 +11,7 @@ export const DEFAULT_SETTINGS: ANFSettings = {
 	connectorOption: "Single",
 	connector: "_",
 	multipleConnectors: ["_", "_", "_"],
+	multipleConnectorsEnabled: [true, true, true],
 	enableImage: true,
 	imageExtensions: [true, true, true, true, true, true, true], // same amout with image extensions
 	image: "image",

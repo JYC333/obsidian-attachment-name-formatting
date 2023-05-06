@@ -128,29 +128,48 @@ export class MultiConnectorModal extends Modal {
 		const startPonit = this.plugin.settings.enableExcludeFileName ? 1 : 0;
 
 		for (let i = startPonit; i < optionLength; i++) {
-			new Setting(contentEl).setName(optionNames[i]).addText((text) =>
-				text
-					.setPlaceholder("_")
-					.setValue(
-						this.plugin.settings.multipleConnectors[i] === "_"
-							? ""
-							: this.plugin.settings.multipleConnectors[i]
-					)
-					.onChange(async (value) => {
-						this.checkValidity(value);
-						this.plugin.settings.multipleConnectors[i] =
-							value === ""
-								? DEFAULT_SETTINGS.multipleConnectors[i]
-								: value;
-						await this.plugin.saveSettings();
-					})
+			const connectorSetting = new Setting(contentEl).setName(
+				optionNames[i]
 			);
+			if (this.plugin.settings.multipleConnectorsEnabled[i]) {
+				connectorSetting.addText((text) =>
+					text
+						.setPlaceholder("_")
+						.setValue(
+							this.plugin.settings.multipleConnectors[i] === "_"
+								? ""
+								: this.plugin.settings.multipleConnectors[i]
+						)
+						.onChange(async (value) => {
+							this.checkValidity(value);
+							this.plugin.settings.multipleConnectors[i] =
+								value === ""
+									? DEFAULT_SETTINGS.multipleConnectors[i]
+									: value;
+							await this.plugin.saveSettings();
+						})
+				);
+			}
+			connectorSetting.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.multipleConnectorsEnabled[i])
+					.onChange(async (value) => {
+						this.plugin.settings.multipleConnectorsEnabled[i] =
+							value;
+						await this.plugin.saveSettings();
+						this.onClose();
+						this.onOpen();
+					});
+			});
 		}
 
 		new Setting(contentEl).addButton((button) =>
 			button.setButtonText("Reset").onClick(async () => {
 				this.plugin.settings.multipleConnectors = [
 					...DEFAULT_SETTINGS.multipleConnectors,
+				];
+				this.plugin.settings.multipleConnectorsEnabled = [
+					...DEFAULT_SETTINGS.multipleConnectorsEnabled,
 				];
 				await this.plugin.saveSettings();
 				this.onClose();

@@ -1,8 +1,14 @@
 ## Obsidian Attachment Name Formatting
 
-This plugin will format all attachments in the format: "filename attachmentFormat indexNumber.xxx"
+This plugin will format all attachments in the format: "notename attachmentFormat indexNumber.xxx"
 
-The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending number from 1 based on the attchmentFormat.You can change the default format for different type of attachments and the connector in the setting.
+The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending number from 1 based on the attchmentFormat.You can change the default format for different type of attachments and the connector in the setting. Basically, there are three types of format:
+
+1. notename attachmentFormat indexNumber.xxx
+2. notename attachmentFormat indexNumber time.xxx
+3. attachmentFormat indexNumber time.xxx
+
+The space in between can be set by your choice, even use nothing in between.
 
 There is a one-in-many situation, which means using the same attachment in many different notes. In this plugin, it gives three options to handle this situation:
 
@@ -18,11 +24,11 @@ When using "Copy" mode, it will take a bit longer time than usual renaming time,
 
 #### Core Function
 
--   Format attachments in active file, such as "filename image 1.png". It can also add modify time after index, such as "filename image 1 20220101000000.png", defualt setting is not adding time. You can also exclude the filename in the attachment filename, but the time suffix will be added automatically and can only use the default mode for the one-in-many situation.
+-   Format attachments in active file, such as "notename image 1.png". It can also add modify time after index, such as "notename image 1 20220101000000.png", defualt setting is not adding time. You can also exclude the notename in the attachment notename, but the time suffix will be added automatically.
 -   Format attachmnets in selected folder
 -   Format attachments with customize subfolder for each attachment type
--   Attachment name can be customized for each type of attachment, you can use any character that allowed in a file name
--   Connector (the character between filename, attachmentFormat and indexNumber) can be customized, you can use any character that allowed in a file name. You can also customized different connectors seperately or even don't use connector. But if you choose using none connector, you can only use the default mode the one-in-many situation.
+-   Attachment name can be customized for each type of attachment, you can use any character that allowed in a note name
+-   Connector (the character between notename, attachmentFormat, indexNumber and time) can be customized, you can use any character that allowed in a note name. You can also customized different connectors seperately or even don't use connector.
 -   Add new attachment -> will rename the attachment based on type and index
 -   Change order -> will rename attachments with new order
 -   Delete attachment -> will rename attachments with new order
@@ -48,7 +54,7 @@ When using "Copy" mode, it will take a bit longer time than usual renaming time,
 
 ### Roadmap
 
--   When deleting attachment in a file, rename it with "filename attachmentFormat unuse 1.xxx".
+-   When deleting attachment in a file, rename it with "notename attachmentFormat unuse 1.xxx".
 -   When deleting an attachment that no other file using this attachment, delete it from vault. (Could be disable)
 -   Support the situation that attachments have same name but under different path.
 -   When change the setting "Files & Links -> Default location for new attachments", sync all attachments' location with this setting. (Could be disable)

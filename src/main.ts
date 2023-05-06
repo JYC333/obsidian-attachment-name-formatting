@@ -396,18 +396,22 @@ export default class AttachmentNameFormatting extends Plugin {
 						let newName = "";
 						if (this.settings.connectorOption === "Multiple") {
 							newName += baseNameComponent[0];
-							const startPoint = this.settings
+							const connectorShift = this.settings
 								.enableExcludeFileName
-								? 2
+								? 0
 								: 1;
-							for (
-								let i = startPoint;
-								i < baseNameComponent.length;
-								i++
-							) {
-								newName +=
-									this.settings.multipleConnectors[i - 1] +
-									baseNameComponent[i];
+							for (let i = 1; i < baseNameComponent.length; i++) {
+								if (
+									this.settings.multipleConnectorsEnabled[
+										i - connectorShift
+									]
+								) {
+									newName +=
+										this.settings.multipleConnectors[
+											i - connectorShift
+										];
+								}
+								newName += baseNameComponent[i];
 							}
 							newName += "." + attachmentFile.extension;
 						} else if (this.settings.connectorOption === "Single") {
@@ -417,13 +421,7 @@ export default class AttachmentNameFormatting extends Plugin {
 								) +
 								"." +
 								attachmentFile.extension;
-						} else {
-							newName =
-								baseNameComponent.join("") +
-								"." +
-								attachmentFile.extension;
 						}
-						console.log(newName);
 
 						// Create folder is not exist
 						await this.app.vault.adapter
@@ -781,42 +779,103 @@ export default class AttachmentNameFormatting extends Plugin {
 		noteName: string,
 		attachmentType: string
 	): boolean {
-		name = name.replace(path.extname(name), "");
-
 		// Get components of the renamed attachment
 		let components = [];
-		if (this.settings.connectorOption) {
-			const regexString = /xxx(\S*)/;
-			for (const i in this.settings.multipleConnectors) {
-				const newRegex = RegExp(
-					regexString
-						.toString()
-						.replace(/\//g, "")
-						.replace(
-							/xxx/g,
-							`\\` + this.settings.multipleConnectors[i]
-						)
+		if (this.settings.connectorOption === "Multiple") {
+			// Check whether the note name is included in the attachment name
+			if (!this.settings.enableExcludeFileName) {
+				const matchString = name.match(
+					RegExp(
+						/.*(?=xxx)/
+							.toString()
+							.replace(/\//g, "")
+							.replace(/xxx/g, attachmentType)
+					)
 				);
-				const matchString = name.match(newRegex);
 				if (matchString) {
-					components.push(name.replace(name.match(newRegex)[0], ""));
-					name = name.match(newRegex)[1];
+					if (this.settings.multipleConnectorsEnabled[0]) {
+						components.push(
+							matchString[0].replace(
+								this.settings.multipleConnectors[0],
+								""
+							)
+						);
+					} else {
+						components.push(matchString[0]);
+					}
+					name = name.replace(matchString[0], "");
 				} else {
-					components.push(name);
+					return false;
 				}
 			}
-			if (
-				!this.settings.enableExcludeFileName &&
-				this.settings.enableTime
-			) {
-				components.push(name);
+
+			// Check whether the attachment type is included in the attachment name
+			const matchString = name.match(
+				RegExp(
+					/xxx/
+						.toString()
+						.replace(/\//g, "")
+						.replace(/xxx/g, attachmentType)
+				)
+			);
+			if (matchString) {
+				components.push(matchString[0]);
+				name = name.replace(matchString[0], "");
+			} else {
+				return false;
+			}
+
+			components.push("indexNumberPlaceholder");
+
+			// Check whether the attachment is end with time
+			if (this.settings.enableTime) {
+				const matchString = name.match(
+					RegExp(
+						/\d{14}(?=xxx)/
+							.toString()
+							.replace(/\//g, "")
+							.replace(/xxx/g, `\\` + path.extname(name))
+					)
+				);
+				if (matchString) {
+					components.push(matchString[0]);
+					name = name.replace(matchString[0], "");
+				} else {
+					return false;
+				}
 			}
 		} else {
 			components = [...name.split(this.settings.connector)];
 		}
 
 		// Check whether the compents are followed the renaming pattern
-		if (this.settings.enableTime) {
+		if (components.length === 3) {
+			if (components[2].length > 1) {
+				const dateCheck = new Date(
+					+components[2].slice(0, 4),
+					+components[2].slice(4, 6) - 1,
+					+components[2].slice(6, 8),
+					+components[2].slice(8, 10),
+					+components[2].slice(10, 12),
+					+components[2].slice(12, 14)
+				);
+				// format: attachmentType_indexNumber_time
+				if (
+					components[1] === attachmentType &&
+					dateCheck.toString() !== "Invalid Date"
+				) {
+					return true;
+				}
+			} else {
+				// format: noteName_attachmentType_indexNumber
+				if (
+					components[0] !== noteName &&
+					components[1] === attachmentType
+				) {
+					return true;
+				}
+			}
+		} else if (components.length === 4) {
 			const dateCheck = new Date(
 				+components[3].slice(0, 4),
 				+components[3].slice(4, 6) - 1,
@@ -826,18 +885,9 @@ export default class AttachmentNameFormatting extends Plugin {
 				+components[3].slice(12, 14)
 			);
 			if (
-				components.length === 4 &&
 				components[0] !== noteName &&
 				components[1] === attachmentType &&
 				dateCheck.toString() !== "Invalid Date"
-			) {
-				return true;
-			}
-		} else {
-			if (
-				components.length === 3 &&
-				components[0] !== noteName &&
-				components[1] === attachmentType
 			) {
 				return true;
 			}
@@ -845,7 +895,13 @@ export default class AttachmentNameFormatting extends Plugin {
 		return false;
 	}
 
+	/**
+	 * Copy the attachment to the new location
+	 *
+	 * @param	{Editor}	editor		Obsidian Editor object
+	 */
 	async handleCopyAttachment(editor: Editor) {
+		// Prevent infinite loop
 		if (!this.renamingCopyAttachment) {
 			return;
 		}

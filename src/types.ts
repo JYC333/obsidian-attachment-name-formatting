@@ -6,6 +6,7 @@ export interface ANFSettings {
 	connectorOption: string;
 	connector: string;
 	multipleConnectors: string[];
+	multipleConnectorsEnabled: boolean[];
 	enableImage: boolean;
 	imageExtensions: boolean[];
 	image: string;
