@@ -67,6 +67,7 @@ export default class AttachmentNameFormatting extends Plugin {
 			})
 		);
 
+		// Copy attachment to the new path
 		this.registerEvent(
 			this.app.workspace.on("editor-change", async (editor) => {
 				await this.handleCopyAttachment(editor);
@@ -159,7 +160,8 @@ export default class AttachmentNameFormatting extends Plugin {
 			name: "Scan Files in the Folder",
 			callback: () => {
 				new FolderScanModal(this.app, this, (folder) => {
-					console.log(folder);
+					console.log(`Will scan the foler: ${folder}`);
+					this.handleLog(`Will scan the foler: ${folder}`);
 					new FolderRenameWarningModal(this.app, async (result) => {
 						if (result) {
 							const fileList = this.app.vault

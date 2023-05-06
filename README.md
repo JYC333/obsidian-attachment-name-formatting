@@ -57,7 +57,6 @@ When using "Copy" mode, it will take a bit longer time than usual renaming time,
 -   When deleting attachment in a file, rename it with "notename attachmentFormat unuse 1.xxx".
 -   When deleting an attachment that no other file using this attachment, delete it from vault. (Could be disable)
 -   Support the situation that attachments have same name but under different path.
--   When change the setting "Files & Links -> Default location for new attachments", sync all attachments' location with this setting. (Could be disable)
 
 ### LICENSE
 
