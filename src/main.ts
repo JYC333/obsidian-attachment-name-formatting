@@ -160,8 +160,8 @@ export default class AttachmentNameFormatting extends Plugin {
 			name: "Scan Files in the Folder",
 			callback: () => {
 				new FolderScanModal(this.app, this, (folder) => {
-					console.log(`Will scan the foler: ${folder}`);
-					this.handleLog(`Will scan the foler: ${folder}`);
+					console.log(`Will scan the folder: ${folder}`);
+					this.handleLog(`Will scan the folder: ${folder}`);
 					new FolderRenameWarningModal(this.app, async (result) => {
 						if (result) {
 							const fileList = this.app.vault
