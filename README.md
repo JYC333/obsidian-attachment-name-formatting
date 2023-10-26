@@ -58,6 +58,28 @@ When using "Copy" mode, it will take a bit longer time than usual renaming time,
 -   When deleting an attachment that no other file using this attachment, delete it from vault. (Could be disable)
 -   Support the situation that attachments have same name but under different path.
 
+### Development Setup
+
+1. Setup change log tool
+
+```
+npm install -g commitizen
+npm install -g conventional-changelog-cli
+```
+
+2. Update change log
+
+```
+git add .
+git cz
+```
+
+3. Update version
+
+```
+npm version run --new=<new_version>
+```
+
 ### LICENSE
 
 MIT

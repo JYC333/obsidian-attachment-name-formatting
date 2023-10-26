@@ -29,6 +29,7 @@ interface AttachmentList {
 
 export default class AttachmentNameFormatting extends Plugin {
 	settings: ANFSettings;
+	vaultAttachmentFolderPath: string;
 	allFolders: string[];
 	renaming = false;
 	renameCopyAttachment: string[] = [];
@@ -223,6 +224,15 @@ export default class AttachmentNameFormatting extends Plugin {
 		}
 	}
 
+	async getVaultAttachmentFolderPath() {
+		await this.app.vault.adapter
+			.read(this.app.vault.configDir + "/app.json")
+			.then((config) => {
+				this.vaultAttachmentFolderPath =
+					JSON.parse(config).attachmentFolderPath;
+			});
+	}
+
 	/**
 	 * Rename the attachments in the active file when it has
 	 *
@@ -241,6 +251,8 @@ export default class AttachmentNameFormatting extends Plugin {
 		}
 		this.renaming = true;
 		timeInterval = new Date();
+
+		await this.getVaultAttachmentFolderPath();
 
 		console.log("Formatting attachments...");
 
@@ -352,9 +364,7 @@ export default class AttachmentNameFormatting extends Plugin {
 					if (attachmentFile instanceof TFile) {
 						// Create the new full name with path
 						// Fetch attachment folder path setting
-						let parent_path =
-							// @ts-ignore
-							this.app.vault.config.attachmentFolderPath;
+						let parent_path = this.vaultAttachmentFolderPath;
 
 						if (parent_path.startsWith("./")) {
 							parent_path = path.join(
