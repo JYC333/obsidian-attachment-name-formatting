@@ -211,9 +211,9 @@ export class ANFSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Automic formatting")
+			.setName("Automatic formatting")
 			.setDesc(
-				"Automic formatting the attachments' name when changing note content"
+				"Automatic formatting the attachments' name when changing note content"
 			)
 			.addToggle((toggle) => {
 				toggle
@@ -416,7 +416,7 @@ export class ANFSettingTab extends PluginSettingTab {
 		containerEl.createEl("h2", { text: "Log Setting" });
 
 		new Setting(containerEl)
-			.setName("Logging Attahment Name Changes")
+			.setName("Logging Attachment Name Changes")
 			.setDesc("Logging the attachmnet name changes into file.")
 			.addToggle((toggle) =>
 				toggle
