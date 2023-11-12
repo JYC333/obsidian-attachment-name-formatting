@@ -213,7 +213,7 @@ export class ANFSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Add path hash at end of attachment name")
 			.setDesc(
-				"Add path has at end of attachment name. This helps with uniqueness when you have multiple notes with the same name."
+				"For uniqueness in attachment names if there are note files with the same name (but at different levels)"
 			)
 			.addToggle((toggle) => {
 				toggle
