@@ -1,3 +1,12 @@
+## [2.1.2](https://github.com/JYC333/obsidian-file-structure-format/compare/2.1.0...2.1.2) (2023-11-12)
+
+
+### Bug Fixes
+
+* fix destination conflict ([269a304](https://github.com/JYC333/obsidian-file-structure-format/commit/269a30462af0371ecd925a09c6c946747c6101d4)), closes [#31](https://github.com/JYC333/obsidian-file-structure-format/issues/31)
+
+
+
 ## [2.1.1](https://github.com/JYC333/obsidian-file-structure-format/compare/2.1.0...2.1.1) (2023-10-26)
 
 
