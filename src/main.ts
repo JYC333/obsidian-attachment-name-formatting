@@ -447,9 +447,12 @@ export default class AttachmentNameFormatting extends Plugin {
 							});
 
 						// Full name including path
-						const fullName = path
+						let fullName = path
 							.join(parent_path, subfolder, newName)
 							.replaceAll("\\", "/");
+						if (fullName.startsWith("/")) {
+							fullName = fullName.slice(1);
+						}
 
 						// Check wether destination is existed, if existed,
 						// rename the destination file to a tmp name

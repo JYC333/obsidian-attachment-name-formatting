@@ -1,3 +1,13 @@
+## [2.1.2](https://github.com/JYC333/obsidian-file-structure-format/compare/2.1.0...2.1.2) (2023-11-12)
+
+
+### Bug Fixes
+
+* fix destination conflict ([269a304](https://github.com/JYC333/obsidian-file-structure-format/commit/269a30462af0371ecd925a09c6c946747c6101d4)), closes [#31](https://github.com/JYC333/obsidian-file-structure-format/issues/31)
+* fix vault config bug ([60084b3](https://github.com/JYC333/obsidian-file-structure-format/commit/60084b3df9e0f27fcf2382c4b8ebeb08605ab38d)), closes [#30](https://github.com/JYC333/obsidian-file-structure-format/issues/30)
+
+
+
 ## [2.1.1](https://github.com/JYC333/obsidian-file-structure-format/compare/2.1.0...2.1.1) (2023-10-26)
 
 

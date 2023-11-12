@@ -77,7 +77,13 @@ git cz
 3. Update version
 
 ```
-npm version run --new=<new_version>
+npm run version --new=<new_version>
+```
+
+4. Push tag
+
+```
+git push origin --tag
 ```
 
 ### LICENSE
