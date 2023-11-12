@@ -33,6 +33,7 @@ export interface ANFSettings {
 	copyPathMode: string;
 	usingLog: boolean;
 	logPath: string;
+	appendPathHash: boolean;
 }
 
 export interface ExtensionList {

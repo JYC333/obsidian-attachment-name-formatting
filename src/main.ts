@@ -18,6 +18,7 @@ import { FolderScanModal, FolderRenameWarningModal } from "./modals";
 import * as path from "path";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const fs = require("fs");
+const crypto = require("crypto");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const JSZip = require("jszip");
 
@@ -402,6 +403,16 @@ export default class AttachmentNameFormatting extends Plugin {
 								("0" + timeInterval.getMinutes()).slice(-2) +
 								("0" + timeInterval.getSeconds()).slice(-2);
 							baseNameComponent.push(date_String);
+						}
+
+						if (this.settings.appendPathHash) {
+							const appendPathHashValue = crypto
+								.createHash("md5")
+								.update(file.parent.path)
+								.digest("hex")
+								.slice(0, 8);
+
+							baseNameComponent.push(appendPathHashValue);
 						}
 
 						// Generater full new name without path
