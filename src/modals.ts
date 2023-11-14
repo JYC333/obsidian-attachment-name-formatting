@@ -89,17 +89,17 @@ export class MultiConnectorModal extends Modal {
 	}
 
 	checkValidity(value: string) {
-		const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|#|\^|\[|\]"/;
+		const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|#|\^|\[|\]"|%/;
 		if (fileNamepatn.test(value)) {
 			new WarningModal(
 				this.app,
 				"Invalid character for filename, will remove the character!"
 			).open();
 			value = value.replace(fileNamepatn, "");
-			this.plugin.settings.multipleConnectors[0] = value;
 			this.onClose();
 			this.onOpen();
 		}
+		return value;
 	}
 
 	onOpen() {
@@ -108,26 +108,37 @@ export class MultiConnectorModal extends Modal {
 			text: `Connectors`,
 		});
 
-		let optionLength;
-
 		const optionNames = [
-			"File name and attachment type",
-			"Attachment type and index number",
-			"Index number and time",
+			"Connector before attachment type",
+			"Connector before index number",
+			"Connector before time suffix",
+			"Connector before path hash",
 		];
 
+		let optionIndex: number[] = [1];
+
 		if (
-			this.plugin.settings.enableExcludeFileName ||
-			this.plugin.settings.enableTime
+			this.plugin.settings.enableTime &&
+			!this.plugin.settings.enablePathHash
 		) {
-			optionLength = 3;
-		} else {
-			optionLength = 2;
+			optionIndex.push(2);
+		} else if (
+			!this.plugin.settings.enableTime &&
+			this.plugin.settings.enablePathHash
+		) {
+			optionIndex.push(3);
+		} else if (
+			this.plugin.settings.enableTime &&
+			this.plugin.settings.enablePathHash
+		) {
+			optionIndex.push(2, 3);
 		}
 
-		const startPonit = this.plugin.settings.enableExcludeFileName ? 1 : 0;
+		if (!this.plugin.settings.enableExcludeFileName) {
+			optionIndex.unshift(0);
+		}
 
-		for (let i = startPonit; i < optionLength; i++) {
+		for (let i of optionIndex) {
 			const connectorSetting = new Setting(contentEl).setName(
 				optionNames[i]
 			);
@@ -141,7 +152,7 @@ export class MultiConnectorModal extends Modal {
 								: this.plugin.settings.multipleConnectors[i]
 						)
 						.onChange(async (value) => {
-							this.checkValidity(value);
+							value = this.checkValidity(value);
 							this.plugin.settings.multipleConnectors[i] =
 								value === ""
 									? DEFAULT_SETTINGS.multipleConnectors[i]

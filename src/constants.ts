@@ -10,8 +10,8 @@ export const extensions: ExtensionList = {
 export const DEFAULT_SETTINGS: ANFSettings = {
 	connectorOption: "Single",
 	connector: "_",
-	multipleConnectors: ["_", "_", "_"],
-	multipleConnectorsEnabled: [true, true, true],
+	multipleConnectors: ["_", "_", "_", "_"],
+	multipleConnectorsEnabled: [true, true, true, true],
 	enableImage: true,
 	imageExtensions: [true, true, true, true, true, true, true], // same amout with image extensions
 	image: "image",
@@ -27,6 +27,7 @@ export const DEFAULT_SETTINGS: ANFSettings = {
 	oneInMany: "Default",
 	enableAuto: true,
 	enableTime: false,
+	enablePathHash: false,
 	enableExcludeFileName: false,
 	excludedFolders: [],
 	subfolders: ["", "", "", ""],
@@ -38,7 +39,6 @@ export const DEFAULT_SETTINGS: ANFSettings = {
 	copyPathMode: "Relative",
 	usingLog: false,
 	logPath: "/",
-	appendPathHash: false,
 };
 
 export const ATTACHMENT_TYPE = ["image", "audio", "video", "pdf"];

@@ -148,7 +148,7 @@ export class ANFSettingTab extends PluginSettingTab {
 								  ] as string)
 						)
 						.onChange(async (value) => {
-							const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|"/;
+							const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|#|\^|\[|\]"|%/;
 							if (fileNamepatn.test(value)) {
 								new WarningModal(
 									this.app,
@@ -211,20 +211,6 @@ export class ANFSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Add path hash at end of attachment name")
-			.setDesc(
-				"For uniqueness in attachment names if there are note files with the same name (but at different levels)"
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.appendPathHash)
-					.onChange(async (value) => {
-						this.plugin.settings.appendPathHash = value;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
 			.setName("Automatic formatting")
 			.setDesc(
 				"Automatic formatting the attachments' name when changing note content"
@@ -247,14 +233,43 @@ export class ANFSettingTab extends PluginSettingTab {
 				toggle
 					.setValue(this.plugin.settings.enableTime)
 					.onChange(async (value) => {
-						if (this.plugin.settings.enableExcludeFileName) {
+						if (
+							this.plugin.settings.enableExcludeFileName &&
+							!this.plugin.settings.enablePathHash
+						) {
 							new WarningModal(
 								app,
-								"Cannot exclude time suffix when enable exclude the note name!"
+								"At least enable time suffix or path hash when enable exclude the note name!"
 							).open();
 							this.plugin.settings.enableTime = true;
 						} else {
 							this.plugin.settings.enableTime = value;
+						}
+						await this.plugin.saveSettings();
+						this.display();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Add path hash at end of attachment name")
+			.setDesc(
+				"For uniqueness in attachment names if there are note files with the same name (but at different levels)"
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.enablePathHash)
+					.onChange(async (value) => {
+						if (
+							this.plugin.settings.enableExcludeFileName &&
+							!this.plugin.settings.enableTime
+						) {
+							new WarningModal(
+								app,
+								"At least enable time suffix or path hash when enable exclude the note name!"
+							).open();
+							this.plugin.settings.enablePathHash = true;
+						} else {
+							this.plugin.settings.enablePathHash = value;
 						}
 						await this.plugin.saveSettings();
 						this.display();

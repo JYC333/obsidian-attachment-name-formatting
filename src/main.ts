@@ -405,7 +405,7 @@ export default class AttachmentNameFormatting extends Plugin {
 							baseNameComponent.push(date_String);
 						}
 
-						if (this.settings.appendPathHash) {
+						if (this.settings.enablePathHash) {
 							const appendPathHashValue = crypto
 								.createHash("md5")
 								.update(file.parent.path)
@@ -419,21 +419,39 @@ export default class AttachmentNameFormatting extends Plugin {
 						let newName = "";
 						if (this.settings.connectorOption === "Multiple") {
 							newName += baseNameComponent[0];
-							const connectorShift = this.settings
-								.enableExcludeFileName
-								? 0
-								: 1;
+
+							let optionIndex: number[] = [1];
+
+							if (
+								this.settings.enableTime &&
+								!this.settings.enablePathHash
+							) {
+								optionIndex.push(2);
+							} else if (
+								!this.settings.enableTime &&
+								this.settings.enablePathHash
+							) {
+								optionIndex.push(3);
+							} else if (
+								this.settings.enableTime &&
+								this.settings.enablePathHash
+							) {
+								optionIndex.push(2, 3);
+							}
+
+							if (!this.settings.enableExcludeFileName) {
+								optionIndex.unshift(0);
+							}
+
+							let connectors = [];
+							for (let i of optionIndex) {
+								connectors.push(
+									this.settings.multipleConnectors[i]
+								);
+							}
+
 							for (let i = 1; i < baseNameComponent.length; i++) {
-								if (
-									this.settings.multipleConnectorsEnabled[
-										i - connectorShift
-									]
-								) {
-									newName +=
-										this.settings.multipleConnectors[
-											i - connectorShift
-										];
-								}
+								newName += connectors[i - 1];
 								newName += baseNameComponent[i];
 							}
 							newName += "." + attachmentFile.extension;

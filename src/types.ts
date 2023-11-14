@@ -22,6 +22,7 @@ export interface ANFSettings {
 	oneInMany: string;
 	enableAuto: boolean;
 	enableTime: boolean;
+	enablePathHash: boolean;
 	enableExcludeFileName: boolean;
 	excludedFolders: string[];
 	subfolders: string[];
@@ -33,7 +34,6 @@ export interface ANFSettings {
 	copyPathMode: string;
 	usingLog: boolean;
 	logPath: string;
-	appendPathHash: boolean;
 }
 
 export interface ExtensionList {
