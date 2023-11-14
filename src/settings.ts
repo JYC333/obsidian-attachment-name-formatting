@@ -211,6 +211,20 @@ export class ANFSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName("Add path hash at end of attachment name")
+			.setDesc(
+				"For uniqueness in attachment names if there are note files with the same name (but at different levels)"
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.appendPathHash)
+					.onChange(async (value) => {
+						this.plugin.settings.appendPathHash = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("Automatic formatting")
 			.setDesc(
 				"Automatic formatting the attachments' name when changing note content"
