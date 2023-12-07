@@ -986,15 +986,19 @@ export default class AttachmentNameFormatting extends Plugin {
 				? "/Attachment Name Formatting Log.md"
 				: this.settings.logPath + "/Attachment Name Formatting Log.md";
 
-		if (!this.app.vault.getAbstractFileByPath(logName)) {
+		const file = this.app.vault.getAbstractFileByPath(logName);
+
+		if (!file) {
 			await this.app.vault.create(
 				logName,
-				"# Attachment Name Formatting Log\n"
+				"# Attachment Name Formatting Log\n" + message
 			);
 		}
 
-		await this.app.vault.adapter.read(logName).then(async (value) => {
-			await this.app.vault.adapter.write(logName, value + message);
-		});
+		if (file instanceof TFile) {
+			await this.app.vault.process(file, (data) => {
+				return data + message;
+			});
+		}
 	}
 }

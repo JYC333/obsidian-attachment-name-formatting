@@ -467,13 +467,13 @@ export class ANFSettingTab extends PluginSettingTab {
 					"Set where the log file saved. Note: change path will not move the old log."
 				)
 				.addDropdown((drop) => {
-					drop.setValue(this.plugin.settings.logPath)
-						.addOptions(
-							this.plugin.allFolders.reduce(
-								(a, v) => ({ ...a, [v]: v }),
-								{}
-							)
+					drop.addOptions(
+						this.plugin.allFolders.reduce(
+							(a, v) => ({ ...a, [v]: v }),
+							{}
 						)
+					)
+						.setValue(this.plugin.settings.logPath)
 						.onChange(async (value) => {
 							this.plugin.settings.logPath = value;
 							await this.plugin.saveSettings();
