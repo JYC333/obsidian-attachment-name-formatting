@@ -90,16 +90,9 @@ export default class AttachmentNameFormatting extends Plugin {
 
 		// Update all folder list when rename exist folder
 		this.registerEvent(
-			this.app.vault.on("rename", (folderOrFile) => {
+			this.app.vault.on("rename", (folderOrFile, oldPath) => {
 				if (folderOrFile instanceof TFolder) {
-					const possibleOriginFolders = this.allFolders.filter(
-						(folder) => folder.includes(folderOrFile.name)
-					);
-					for (const folder of possibleOriginFolders) {
-						if (!this.app.vault.getAbstractFileByPath(folder)) {
-							this.allFolders.remove(folder);
-						}
-					}
+					this.allFolders.remove(oldPath);
 					if (!this.allFolders.includes(folderOrFile.path)) {
 						this.allFolders.push(folderOrFile.path);
 					}
