@@ -148,7 +148,8 @@ export class ANFSettingTab extends PluginSettingTab {
 								  ] as string)
 						)
 						.onChange(async (value) => {
-							const fileNamepatn = /\||<|>|\?|\*|:|\/|\\|#|\^|\[|\]"|%/;
+							const fileNamepatn =
+								/\||<|>|\?|\*|:|\/|\\|#|\^|\[|\]"|%/;
 							if (fileNamepatn.test(value)) {
 								new WarningModal(
 									this.app,
@@ -286,7 +287,9 @@ export class ANFSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.enableExcludeFileName)
 					.onChange(async (value) => {
 						this.plugin.settings.enableExcludeFileName = value;
-						this.plugin.settings.enableTime = value;
+						if (!this.plugin.settings.enablePathHash && value) {
+							this.plugin.settings.enableTime = value;
+						}
 						this.plugin.settings.multipleConnectorsEnabled[0] =
 							!value;
 						this.plugin.settings.oneInMany = "Default";

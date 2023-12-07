@@ -1,12 +1,16 @@
 ## Obsidian Attachment Name Formatting
 
-This plugin will format all attachments in the format: "notename attachmentFormat indexNumber.xxx"
+This plugin will format all attachments in the format: "noteName attachmentFormat indexNumber.xxx"
 
-The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending number from 1 based on the attchmentFormat.You can change the default format for different type of attachments and the connector in the setting. Basically, there are three types of format:
+The attachmentFormat are image, audio, video and pdf. IndexNumber is ascending number from 1 based on the attchmentFormat.You can change the default format for different type of attachments and the connector in the setting. Basically, there are three components can be enabled or disabled in attachment name: **noteName**, **time** (format time), and **pathHash** (absolute note path hash). Therefore, there could be seven types for the attachment name format:
 
-1. notename attachmentFormat indexNumber.xxx
-2. notename attachmentFormat indexNumber time.xxx
-3. attachmentFormat indexNumber time.xxx
+1. noteName attachmentFormat indexNumber.xxx
+2. noteName attachmentFormat indexNumber time.xxx
+3. noteName attachmentFormat indexNumber pathHash.xxx
+4. noteName attachmentFormat indexNumber time pathHash.xxx
+5. attachmentFormat indexNumber time.xxx
+6. attachmentFormat indexNumber pathHash.xxx
+7. attachmentFormat indexNumber time pathHash.xxx
 
 The space in between can be set by your choice, even use nothing in between.
 
@@ -24,11 +28,11 @@ When using "Copy" mode, it will take a bit longer time than usual renaming time,
 
 #### Core Function
 
--   Format attachments in active file, such as "notename image 1.png". It can also add modify time after index, such as "notename image 1 20220101000000.png", defualt setting is not adding time. You can also exclude the notename in the attachment notename, but the time suffix will be added automatically.
+-   Format attachments in active file, such as "noteName image 1.png". Format time and absolute note path hash can add into attachment name, such as "noteName image 1 20220101000000.png", "noteName image 1 6666cd76.png". Defualt setting is not adding time and path hash. You can also exclude the noteName in the attachment noteName, but the time suffix will be added automatically.
 -   Format attachmnets in selected folder
 -   Format attachments with customize subfolder for each attachment type
 -   Attachment name can be customized for each type of attachment, you can use any character that allowed in a note name
--   Connector (the character between notename, attachmentFormat, indexNumber and time) can be customized, you can use any character that allowed in a note name. You can also customized different connectors seperately or even don't use connector.
+-   Connector (the character between noteName, attachmentFormat, indexNumber, time and pathHash) can be customized, you can use any character that allowed in a note name. You can also customized different connectors seperately or even don't use connector.
 -   Add new attachment -> will rename the attachment based on type and index
 -   Change order -> will rename attachments with new order
 -   Delete attachment -> will rename attachments with new order
@@ -54,9 +58,8 @@ When using "Copy" mode, it will take a bit longer time than usual renaming time,
 
 ### Roadmap
 
--   When deleting attachment in a file, rename it with "notename attachmentFormat unuse 1.xxx".
+-   When deleting attachment in a file, rename it with "noteName attachmentFormat unuse 1.xxx".
 -   When deleting an attachment that no other file using this attachment, delete it from vault. (Could be disable)
--   Support the situation that attachments have same name but under different path.
 
 ### Development Setup
 
@@ -85,6 +88,14 @@ npm run version --new=<new_version>
 ```
 git push origin --tag
 ```
+
+## Thanks
+
+I develop this plugin as a hobby, spending my free time doing this. If you find it valuable, then please say THANK YOU or buy me a coffee...
+
+![Alipay](.github/funding/QR_alipay.jpg)
+![Wechat](.github/funding/QR_wechat.jpg)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/G2G7RXRRO)
 
 ### LICENSE
 
