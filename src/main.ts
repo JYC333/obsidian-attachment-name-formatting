@@ -16,6 +16,7 @@ import { ANFSettingTab, ribbons } from "./settings";
 import { FolderScanModal, FolderRenameWarningModal } from "./modals";
 
 import * as path from "path";
+import { exec } from "child_process";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const fs = require("fs");
 const crypto = require("crypto");
@@ -979,7 +980,14 @@ export default class AttachmentNameFormatting extends Plugin {
 				? "/Attachment Name Formatting Log.md"
 				: this.settings.logPath + "/Attachment Name Formatting Log.md";
 
-		const file = this.app.vault.getAbstractFileByPath(logName);
+		let file;
+		try {
+			file = this.app.vault.getAbstractFileByPath(logName);
+		} catch (error) {
+			new Notice(`Error when open log file: ${error}`);
+			console.error("Error when open log file:", error);
+			return;
+		}
 
 		if (!file) {
 			await this.app.vault.create(
