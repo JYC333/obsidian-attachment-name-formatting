@@ -1,3 +1,12 @@
+## [2.1.7](https://github.com/JYC333/obsidian-file-structure-format/compare/2.1.6...2.1.7) (2023-12-26)
+
+
+### Bug Fixes
+
+* no active editor won't break plugin now, set a minimum time for plugin run the second time ([c11e44a](https://github.com/JYC333/obsidian-file-structure-format/commit/c11e44ab14d3f5ab0eac50f568322e5f1bf86b3e)), closes [#29](https://github.com/JYC333/obsidian-file-structure-format/issues/29)
+
+
+
 ## [2.1.5](https://github.com/JYC333/obsidian-file-structure-format/compare/2.1.4...2.1.5) (2023-12-07)
 
 

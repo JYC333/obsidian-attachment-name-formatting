@@ -249,7 +249,13 @@ export default class AttachmentNameFormatting extends Plugin {
 		}
 		this.renaming = true;
 		timeInterval = new Date();
-		const editor = this.app.workspace.activeEditor.editor;
+
+		let editor;
+		try {
+			editor = this.app.workspace.activeEditor.editor;
+		} catch {
+			console.log("No active editor.");
+		}
 
 		await this.getVaultAttachmentFolderPath();
 
@@ -561,7 +567,7 @@ export default class AttachmentNameFormatting extends Plugin {
 		} else {
 			console.log("No attachments found...");
 		}
-		this.renaming = false;
+		setTimeout(() => (this.renaming = false), 3000);
 	}
 
 	/*
