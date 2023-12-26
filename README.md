@@ -89,7 +89,7 @@ npm run version --new=<new_version>
 git push origin --tag
 ```
 
-## Thanks
+### Thanks
 
 I develop this plugin as a hobby, spending my free time doing this. If you find it valuable, then please say THANK YOU or buy me a coffee...
 
