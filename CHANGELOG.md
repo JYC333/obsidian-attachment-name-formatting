@@ -1,3 +1,12 @@
+## [2.1.8](https://github.com/JYC333/obsidian-attachment-name-formatting/compare/2.1.7...2.1.8) (2023-12-28)
+
+
+### Bug Fixes
+
+* fix broken bug in 2.1.7 ([adbe414](https://github.com/JYC333/obsidian-attachment-name-formatting/commit/adbe414b4997f14c720a32d1b9754e1a85f1d9ae)), closes [#35](https://github.com/JYC333/obsidian-attachment-name-formatting/issues/35)
+
+
+
 ## [2.1.7](https://github.com/JYC333/obsidian-file-structure-format/compare/2.1.6...2.1.7) (2023-12-26)
 
 

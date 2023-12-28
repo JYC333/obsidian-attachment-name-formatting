@@ -1,7 +1,6 @@
 import { App, Editor, TAbstractFile, TFile, parseLinktext } from "obsidian";
 import * as path from "path";
 import { ANFSettings } from "src/types";
-import AttachmentNameFormatting from "src/main";
 
 /**
  * Get attachment file
@@ -112,7 +111,7 @@ export function checkAlreadyRenamed(
 		if (settings.enablePathHash) {
 			const connector =
 				settings.multipleConnectors[
-					settings.multipleConnectors.length - 1
+				settings.multipleConnectors.length - 1
 				];
 
 			const nameSplits = name.split(".");
@@ -131,23 +130,32 @@ export function checkAlreadyRenamed(
 		components = [...name.split(settings.connector)];
 	}
 
-	const dateCheck2 = new Date(
-		+components[2].slice(0, 4),
-		+components[2].slice(4, 6) - 1,
-		+components[2].slice(6, 8),
-		+components[2].slice(8, 10),
-		+components[2].slice(10, 12),
-		+components[2].slice(12, 14)
-	);
+	let dateCheck2, dateCheck3
+	if (components.length >= 3) {
+		dateCheck2 = new Date(
+			+components[2].slice(0, 4),
+			+components[2].slice(4, 6) - 1,
+			+components[2].slice(6, 8),
+			+components[2].slice(8, 10),
+			+components[2].slice(10, 12),
+			+components[2].slice(12, 14)
+		);
+	} else {
+		dateCheck2 = new Date("Invalid");
+	}
 
-	const dateCheck3 = new Date(
-		+components[3].slice(0, 4),
-		+components[3].slice(4, 6) - 1,
-		+components[3].slice(6, 8),
-		+components[3].slice(8, 10),
-		+components[3].slice(10, 12),
-		+components[3].slice(12, 14)
-	);
+	if (components.length >= 4) {
+		dateCheck3 = new Date(
+			+components[3].slice(0, 4),
+			+components[3].slice(4, 6) - 1,
+			+components[3].slice(6, 8),
+			+components[3].slice(8, 10),
+			+components[3].slice(10, 12),
+			+components[3].slice(12, 14)
+		);
+	} else {
+		dateCheck3 = new Date("Invalid");
+	}
 
 	// Check whether the compents are followed the renaming pattern
 	if (components.length === 3) {
